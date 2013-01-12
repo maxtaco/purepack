@@ -46,6 +46,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
   
   base64_encode : () ->
+    # b = the base array, p = the pad array
     b = []
     l = @_b.length
     
