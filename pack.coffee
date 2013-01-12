@@ -7,15 +7,20 @@
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> (f|0) is f
 
-#-----------------------------------------------------------------------
+##=======================================================================
 
-class Packer
+exports.Packer = class Packer
 
   #-----------------------------------------
 
   constructor: ->
     @_buffer = new Buffer()
 
+  #-----------------------------------------
+
+  output : (enc) ->
+    @_buffer.toString enc
+  
   #-----------------------------------------
 
   p : (o) ->
@@ -125,3 +130,10 @@ class Packer
 
   #-----------------------------------------
 
+##=======================================================================
+
+exports.pack = (x, enc) ->
+  packer = new Packer()
+  packer.p x
+  packer.output enc
+  

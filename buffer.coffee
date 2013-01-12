@@ -13,9 +13,7 @@ exports.Buffer = class Buffer
   
   init_base64_map : () ->
     c = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    @_b64_map = []
-    for i in [0...c.length]
-      @_b64_map.push c.charAt i
+    @_b64_map = (i for i in c)
   
   #-----------------------------------------
   
@@ -59,7 +57,7 @@ exports.Buffer = class Buffer
       # Sum up 24 bits of the string (3-bytes)
       n = (@_get(c) << 16) + (@_get(c+1) << 8) + @_get(c+2)
 
-      # push the translation chars onto the tmp vector
+      # push the translation chars onto the b vector
       b.push @_b64_map[(n >>> i*6) & 0x3f] for i in [3..0]
 
 
