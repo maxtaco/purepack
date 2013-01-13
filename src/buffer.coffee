@@ -35,6 +35,7 @@ exports.Buffer = class Buffer
   push_bytes  : (a) ->
     for i in [0...a.length]
       @push_byte a.charCodeAt i
+    @
 
   #-----------------------------------------
   
@@ -58,7 +59,7 @@ exports.Buffer = class Buffer
    
   #-----------------------------------------
 
-  binary_encode : () -> @_b.join ''
+  binary_encode : () -> String.fromCharCode @_b...
    
   #-----------------------------------------
 
@@ -168,8 +169,8 @@ exports.Buffer = class Buffer
   #-----------------------------------------
   
   base64_decode  : (data) -> @_base64_decode data, @B64
-  base64a_decode : (data) -> @_base64_decode data, @B64a
-  base64x_decode : (data) -> @_base64_decode data, @B64x
+  base64a_decode : (data) -> @_base64_decode data, @B64A
+  base64x_decode : (data) -> @_base64_decode data, @B64X
  
   #-----------------------------------------
 
