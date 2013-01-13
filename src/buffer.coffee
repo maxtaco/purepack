@@ -175,12 +175,21 @@ exports.Buffer = class Buffer
 
   base32_decode : (data) ->
     sum = 0
+    
     for c, i in data
       return null unless (v = @B32.rev[c])?
+
+      # We can't use bitwise right shift here (or bitwise OR)
+      # since that will break when we're above 32 bits.  Of course
+      # we have a 40-bit window for base32-encodings.
       sum = (sum * 32) + v
+      
       if i % 8 is 7
-        @push_byte(rshift(sum,i*8) & 0xff) for i in [5...0]
         sum = 0
+        
+        # Again, we don't use '>>' but instead 'rshift', which
+        # can handle numbers above 2^32.
+        @push_byte(rshift(sum,i*8) & 0xff) for i in [4..0]
 
     # now we have to futz with the remainder
     if (rem = data.length % 8) isnt 0
@@ -189,12 +198,12 @@ exports.Buffer = class Buffer
       sum *= 32 for i in [8...rem]
 
       # Only certain sizes of remainder are admissible, it's the
-      # reverse of the above map.
-      return null unless (n_more = [0,1,0,2,3,0,4][rem]) isnt 0
+      # reverse of the above map. 'nmb' = number more bytes.
+      return null unless (nmb = {2:1,4:2,5:3,7:4}[rem])?
 
       # As above, we shift bytes on, starting from the left and
       # marching rightward.  But we stop early.
-      @push_byte(rshift(sum,i*8) & 0xff) for i in [5..(5-n_more)]
+      @push_byte(rshift(sum,i*8) & 0xff) for i in [4...(4-nmb)]
 
     @ # success at last
   
