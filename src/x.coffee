@@ -1,5 +1,5 @@
 bm = require './buffer'
-
+top = require './index'
 
 test = (w) ->
   x = new bm.Buffer()
@@ -16,4 +16,7 @@ test = (w) ->
 
 for x in [ "b", "bc", "def", "food", "jelly", "\x11\x23\xff\xfe\xef" ]
   test x
+
+console.log top.pack { foo : [ 1, 2, { yo : "man" }, null ], bar : false }
+
 
