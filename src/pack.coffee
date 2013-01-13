@@ -1,12 +1,12 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
+{pow2,rshift} = require './util'
 
 ##=======================================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
-pow2 = (n) -> if n < 31 then (1 << n) else Math.pow(2,n)
 twos_comp = (x, n) -> if x < 0 then pow2(n) - Math.abs(x) else x
 U32MAX = pow2(32)
 

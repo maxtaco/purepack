@@ -1,11 +1,14 @@
 
+{pow2,rshift} = require './util'
+
 ##=======================================================================
 
 class CharMap
-  constructor : (s) ->
+  constructor : (s, pad = "") ->
     @fwd = (c for c in s)
     @rev = {}
     @rev[c] = i for c,i in s
+    @rev[c] = 0 for c in pad
 
 ##=======================================================================
 
@@ -13,14 +16,13 @@ exports.Buffer = class Buffer
 
   B16 : new CharMap "0123456789abcdef"
   B32 : new CharMap "abcdefghijkmnpqrstuvwxyz23456789"
-  B64 : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-  B64X : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@_"
-  B64A : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
+  B64 : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", "="
+  B64X : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@_", "="
+  B64A : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-", "="
 
   #-----------------------------------------
   
-  constructor : () ->
-    @_b = []
+  constructor : () -> @_b = []
 
   #-----------------------------------------
   
@@ -48,10 +50,15 @@ exports.Buffer = class Buffer
       when 'base64x' then @base64x_encode()
       when 'base32'  then @base32_encode()
       when 'hex'     then @base16_encode()
+      when 'binary'  then @binary_encode()
       
   #-----------------------------------------
 
   _get : (i) -> if i < @_b.length then @_b[i] else 0
+   
+  #-----------------------------------------
+
+  binary_encode : () -> @_b.join ''
    
   #-----------------------------------------
 
@@ -113,4 +120,83 @@ exports.Buffer = class Buffer
 
     return (b[0...(b.length - p.length)].concat p).join ''
 
+  #-----------------------------------------
+
+  @decode : (s, enc) ->
+    switch enc
+      when 'binary'  then (new Buffer).binary_decode s
+      when 'base64'  then (new Buffer).base64_decode s
+      when 'base64a' then (new Buffer).base64a_decode s
+      when 'base64x' then (new Buffer).base64x_decode s
+      when 'base32'  then (new Buffer).base32_decode s
+      when 'hex'     then (new Buffer).base16_decode s
+     
+  #-----------------------------------------
+
+  binary_decode : (b) ->
+    @_b = b
+    @
+    
+  #-----------------------------------------
+
+  base16_decode : (data) ->
+    if (data.length % 2) isnt 0 then null
+    else
+      last = 0
+      for c,i in data
+        return null if not (v = @B16.rev[c])?
+        if i % 2 is 0 then last = v
+        else @push_byte ((last << 4) | v)
+      @
+     
+  #-----------------------------------------
+
+  _base64_decode : (data, M) ->
+    if (data.length % 4) isnt 0 then null
+    else
+      sum = 0
+      npad = 0
+      for c,i in data
+        return null unless (v = M.rev[c])?
+        npad++ if c is '='
+        sum = ((sum << 6) | v)
+        if i % 4 is 3
+          @push_byte((sum >> i*8) & 0xff) for i in [2..npad]
+          sum = 0
+      @
+      
+  #-----------------------------------------
+  
+  base64_decode  : (data) -> @_base64_decode data, @B64
+  base64a_decode : (data) -> @_base64_decode data, @B64a
+  base64x_decode : (data) -> @_base64_decode data, @B64x
+ 
+  #-----------------------------------------
+
+  base32_decode : (data) ->
+    sum = 0
+    for c, i in data
+      return null unless (v = @B32.rev[c])?
+      sum = (sum * 32) + v
+      if i % 8 is 7
+        @push_byte(rshift(sum,i*8) & 0xff) for i in [5...0]
+        sum = 0
+
+    # now we have to futz with the remainder
+    if (rem = data.length % 8) isnt 0
+
+      # we still need to shift the currently active sum over
+      sum *= 32 for i in [8...rem]
+
+      # Only certain sizes of remainder are admissible, it's the
+      # reverse of the above map.
+      return null unless (n_more = [0,1,0,2,3,0,4][rem]) isnt 0
+
+      # As above, we shift bytes on, starting from the left and
+      # marching rightward.  But we stop early.
+      @push_byte(rshift(sum,i*8) & 0xff) for i in [5..(5-n_more)]
+
+    @ # success at last
+  
+        
 ##=======================================================================
