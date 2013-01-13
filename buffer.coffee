@@ -61,24 +61,24 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   base32_encode : () ->
+    # Taken from okws/sfslite armor.C / armor32()
+    
     b = []
     l = @_b.length
 
-    rem = [ 0, 2, 4, 5, 7]
-    outlen = Math.floor(l / 5) * 8 + rem[l%5]
-    
+    outlen = Math.floor(l / 5) * 8 + [0,2,4,5,7][l%5]
+
+    p = 0
     for c in [0...l] by 5
+      b[p++] = @B32.fwd[@_get(c) >> 3]
+      b[p++] = @B32.fwd[@_get(c) & 0x7 | @_get(++c) >> 6]        if p < outlen
+      b[p++] = @B32.fwd[@_get(c) >> 1 & 0x1f]                    if p < outlen
+      b[p++] = @B32.fwd[(@_get(c) & 0x1) << 4 | @_get(++c) >> 4] if p < outlen
+      b[p++] = @B32.fwd[(@_get(c) & 0xf) << 1 | @_get(++c) >> 7] if p < outlen
+      b[p++] = @B32.fwd[@_get(c) >> 2 & 0x1f]                    if p < outlen
+      b[p++] = @B32.fwd[(@_get(c) & 0x3) << 3 | @_get(++c) >> 5] if p < outlen
+      b[p++] = @B32.fwd[@_get(c) & 0x1f]                         if p < outlen
       
-      # Sum up 40 bits of the string (5 bytes)
-      n = 0
-      for i in [0..4]
-        n += (@_get(c+i) << ((4 - i)*8))
-      console.log "n by c: #{n}"
-
-      # push the translation chars onto the b vector
-      b.push @B32.fwd[(n >>> i*5) & 0x1f] for i in [7..0]
-
-    console.log "l: #{l}; PL: #{outlen} b.len: #{b.length}"
     return b[0...outlen].join ''
    
   #-----------------------------------------
