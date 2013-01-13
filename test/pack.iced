@@ -23,6 +23,7 @@ exports.pack3 = (T, cb) ->
   compare T, [-1000..1000], "pack3 test 2"
   compare T, [-1000..1000], "pack3 test 2"
   compare T, [-32800...-32700], "pack3 test 4"
+  compare T, [-2147483668...-2147483628], "pack3 test 5"
   cb()
 
 exports.pack5 = (T, cb) ->

@@ -5,7 +5,11 @@
 #-----------------------------------------------------------------------
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
-is_int = (f) -> (f|0) is f
+is_int = (f) -> Math.floor(f) is f
+pow2 = (n) -> if n < 31 then (1 << n) else Math.pow(2,n)
+twos_comp = (x, n) -> if x < 0 then pow2(n) - Math.abs(x) else x
+
+##=======================================================================
 
 ##=======================================================================
 
@@ -42,10 +46,53 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_byte : (b) -> @_buffer.push_byte b
-  p_int  : (i) -> @_buffer.push_int i
-  p_short: (s) -> @_buffer.push_short s
+  p_byte : (b) -> @_buffer.push_byte twos_comp b, 8
+  p_short: (s) -> @_buffer.push_short twos_comp s, 16
+  p_int  : (i) -> @_buffer.push_int twos_comp i, 32
 
+  #-----------------------------------------
+
+  #
+  # p_neg_int64 -- Pack integer i < -2^31 into a signed quad,
+  #   up until the JS resolution cut-off at least.  
+  # 
+  # The challenge is to express the integer i in the form
+  # 2^64 - |i| as per standard 2's complement, and then put both
+  # words in the buffer stream.  There's the way it's done:
+  #
+  #   Given input i, pick x and y such that |i| = 2^32 x + y,
+  #   where x,y are both positive, and both less than 2^32.
+  #
+  #   Now we can write:
+  # 
+  #       2^64 - |i| = 2^64 - 2^32 x - y
+  #
+  #   Factoring and rearranging:
+  # 
+  #       2^64 - |i| = 2^32 * (2^32 - x - 1) + (2^32 - y)
+  # 
+  #   Thus, we've written:
+  #
+  #        2^64 - |i| =  2^32 a + b
+  #
+  #   Where 0 <= a,b < 2^32. In particular:
+  #
+  #       a = 2^32 - x - 1
+  #       b = 2^32 - y
+  #
+  #   And this satisfies our need to put two positive ints into
+  #   stream.
+  # 
+  p_neg_int64 : (i) ->
+    abs_i = 0 - i
+    u32max = Math.pow(2,32)
+    x = Math.floor( abs_i / u32max)
+    y = abs_i & (u32max - 1)
+    a = u32max - x - 1
+    b = u32max - y
+    @p_int a
+    @p_int b
+   
   #-----------------------------------------
 
   p_boolean : (b) -> @p_byte if b then C.true else C.false
@@ -87,20 +134,19 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_negative_int : (i) ->
-    if i >= -32 then @p_byte (0x100 + i)
+    if i >= -32 then @p_byte i
     else if i >= -128
       @p_byte C.int8
-      @p_byte (0x100 + i)
+      @p_byte i
     else if i >= -32768
       @p_byte C.int16
-      @p_short (0x10000 + i)
-    else if i >= -214748364
+      @p_short i
+    else if i >= -2147483648
       @p_byte C.int32
-      @p_int (0x100000000 + i)
+      @p_int i
     else
       @p_byte C.int64
-      @p_int (i >> 32)
-      @p_int (i & 0xffffffff)
+      @p_neg_int64 i
 
   #-----------------------------------------
 
