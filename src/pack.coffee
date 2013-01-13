@@ -26,7 +26,7 @@ exports.Packer = class Packer
   p : (o) ->
     switch typeof o
       when 'number'  then @p_number o
-      when 'string'  then @p_string o
+      when 'string'  then @p_bytes o
       when 'boolean' then @p_boolean o
       when 'object'
         if not o?          then @p_null()
@@ -43,7 +43,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_byte : (b) -> @_buffer.push_byte b
-  p_int  : (i) -> @_buffer.push_int b
+  p_int  : (i) -> @_buffer.push_int i
   p_short: (s) -> @_buffer.push_short s
 
   #-----------------------------------------
@@ -87,16 +87,16 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_negative_int : (i) ->
-    if i >= -32 then @p_byte i
+    if i >= -32 then @p_byte (0x100 + i)
     else if i >= -128
       @p_byte C.int8
-      @p_byte i
+      @p_byte (0x100 + i)
     else if i >= -32768
       @p_byte C.int16
-      @p_short i 
+      @p_short (0x10000 + i)
     else if i >= -214748364
       @p_byte C.int32
-      @p_int i
+      @p_int (0x100000000 + i)
     else
       @p_byte C.int64
       @p_int (i >> 32)
@@ -104,17 +104,9 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_string : (s) -> @p_bytes s
-
-  #-----------------------------------------
-
   p_bytes : (b) ->
     @p_len b.length, C.fix_raw, C.raw16, C.raw32
-    @p_string b
-
-  #-----------------------------------------
-
-  p_string : (r) -> @_buffer.push_bytes r
+    @_buffer.push_bytes b
 
   #-----------------------------------------
 

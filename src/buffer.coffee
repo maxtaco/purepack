@@ -42,7 +42,6 @@ exports.Buffer = class Buffer
   #-----------------------------------------
   
   toString : (enc = 'base64') ->
-    console.log @_b
     switch enc
       when 'base64'  then @base64_encode()
       when 'base64a' then @base64a_encode()
