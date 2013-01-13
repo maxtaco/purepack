@@ -7,8 +7,9 @@ test = (w) ->
   e1 = x.toString 'base64'
   e2 = (new Buffer w, 'binary').toString 'base64'
   if e1 isnt e2
-   console.log e2
-   console.log "fuck #{w}"
+    console.log e1
+    console.log e2
+    console.log "fuck #{w}"
   console.log x.toString 'hex'
   console.log x.toString 'base32'
 

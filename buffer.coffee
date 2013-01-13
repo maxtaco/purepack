@@ -14,6 +14,8 @@ exports.Buffer = class Buffer
   B16 : new CharMap "0123456789abcdef"
   B32 : new CharMap "abcdefghijkmnpqrstuvwxyz23456789"
   B64 : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+  B64X : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@_"
+  B64A : new CharMap "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-"
 
   #-----------------------------------------
   
@@ -41,9 +43,11 @@ exports.Buffer = class Buffer
   
   toString : (enc) ->
     switch enc
-      when 'base64' then @base64_encode()
-      when 'base32' then @base32_encode()
-      when 'hex'    then @base16_encode()
+      when 'base64'  then @base64_encode()
+      when 'base64a' then @base64a_encode()
+      when 'base64x' then @base64x_encode()
+      when 'base32'  then @base32_encode()
+      when 'hex'     then @base16_encode()
       
   #-----------------------------------------
 
@@ -82,8 +86,14 @@ exports.Buffer = class Buffer
     return b[0...outlen].join ''
    
   #-----------------------------------------
+
+  base64_encode :  () -> @_base64_encode @B64
+  base64a_encode : () -> @_base64_encode @B64A
+  base64x_encode : () -> @_base64_encode @B64X
   
-  base64_encode : () ->
+  #-----------------------------------------
+  
+  _base64_encode : (M) ->
     # b = the base array, p = the pad array
     b = []
     l = @_b.length
@@ -98,7 +108,7 @@ exports.Buffer = class Buffer
       n = (@_get(c) << 16) + (@_get(c+1) << 8) + @_get(c+2)
 
       # push the translation chars onto the b vector
-      b.push @B64.fwd[(n >>> i*6) & 0x3f] for i in [3..0]
+      b.push M.fwd[(n >>> i*6) & 0x3f] for i in [3..0]
 
 
     return (b[0...(b.length - p.length)].concat p).join ''
