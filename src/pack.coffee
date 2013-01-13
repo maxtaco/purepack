@@ -2,14 +2,13 @@
 {C} = require './const'
 {Buffer} = require './buffer'
 
-#-----------------------------------------------------------------------
+##=======================================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
 pow2 = (n) -> if n < 31 then (1 << n) else Math.pow(2,n)
 twos_comp = (x, n) -> if x < 0 then pow2(n) - Math.abs(x) else x
-
-##=======================================================================
+U32MAX = pow2(32)
 
 ##=======================================================================
 
@@ -85,11 +84,10 @@ exports.Packer = class Packer
   # 
   p_neg_int64 : (i) ->
     abs_i = 0 - i
-    u32max = Math.pow(2,32)
-    x = Math.floor( abs_i / u32max)
-    y = abs_i & (u32max - 1)
-    a = u32max - x - 1
-    b = u32max - y
+    x = Math.floor( abs_i / U32MAX)
+    y = abs_i & (U32MAX - 1)
+    a = U32MAX - x - 1
+    b = U32MAX - y
     @p_int a
     @p_int b
    
@@ -123,13 +121,13 @@ exports.Packer = class Packer
     else if i <= 0xffff
       @p_byte C.uint16
       @p_short i
-    else if i <= 0xffffffff
+    else if i < U32MAX
       @p_byte C.uint32
       @p_int i
     else
       @p_byte C.uint64
-      @p_int (i >> 32)
-      @p_int (i & 0xffffffff)
+      @p_int Math.floor(i / U32MAX)
+      @p_int (i & (U32MAX - 1))
 
   #-----------------------------------------
 
