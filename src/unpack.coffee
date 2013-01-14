@@ -1,7 +1,7 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
-{twos_compl_inv,U32MAX,u64max_minus_i} = require './util'
+{pow2,twos_compl_inv,U32MAX,u64max_minus_i} = require './util'
   
 
 ##=======================================================================
@@ -18,7 +18,12 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
-  u_raw : (n) -> @_buffer.consume_string n
+  u_raw : (n) ->
+    @_buffer.consume_string n
+   
+  #-----------------------------------------
+
+  get_error : () -> if @_e.length then @_e else null
    
   #-----------------------------------------
 
@@ -34,20 +39,23 @@ exports.Unpacker = class Unpacker
      
   #-----------------------------------------
 
-  u_uint8 = () -> @_buffer.consume_byte()
-  u_int8 = () -> twos_compl_inv @u_uint8()
-  u_uint16 = () ->
+  u_uint8 : () -> @_buffer.consume_byte()
+  u_int8 : () -> twos_compl_inv @u_uint8(), 8
+  u_uint16 : () ->
     v = @_buffer.consume_bytes 2
     return (v[0] << 8 | v[1])
-  u_int16 = () -> twos_compl_inv @u_int16()
-  u_uint32 = () ->
+  u_int16 : () -> twos_compl_inv @u_uint16(), 16
+  u_uint32 : () ->
     v = @_buffer.consume_bytes 4
-    return ((v[0] << 24) | (v[1] << 16) | (v[2] << 8) | v[3])
-  u_int32 = () -> return twos_compl_inv @u_uint32
-  u_uint64 = () -> (@u_uint32() * U32MAX) + @u_uint32()
-  u_int64 = () ->
-    [a,b] = u64max_minus_i @u_uint64()
-    return -1 * a * U32MAX - b
+    sum = 0
+    sum += b*pow2(8*(3-i)) for b,i in v
+    return sum
+  u_int32 : () ->
+    return twos_compl_inv @u_uint32(), 32
+  u_uint64 : () -> (@u_uint32() * U32MAX) + @u_uint32()
+  u_int64 : () ->
+    [a,b] = (@u_uint32() for i in [0...2])
+    U32MAX*(a - U32MAX) + b
     
   #-----------------------------------------
 
@@ -94,10 +102,17 @@ exports.Unpacker = class Unpacker
         when C.map32 then @u_map @u_uint32()
         else @error "unhandled type #{b}"
       
-  #-----------------------------------------
-
-      
-
 ##=======================================================================
 
-exports.unpack = (x) -> null
+exports.unpack = (x, enc = 'base64') ->
+  unpacker = new Unpacker
+  err = null
+  res = null
+  if (unpacker.decode x, enc)
+    res = unpacker.u()
+    err = unpacker.get_error()
+  else
+    err = "Decoding type '#{enc}' failed"
+  return [err, res]
+    
+##=======================================================================

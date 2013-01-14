@@ -224,7 +224,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   consume_string : (n) ->
-    String.fromCharCode consume_bytes n
+    String.fromCharCode (@consume_bytes n)...
    
   #-----------------------------------------
   
