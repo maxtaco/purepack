@@ -1,7 +1,7 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
-{twos_compl_inv} = require './util'
+{twos_compl_inv,U32MAX,u64max_minus_i} = require './util'
   
 
 ##=======================================================================
@@ -18,6 +18,39 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
+  u_raw : (n) -> @_buffer.consume_string n
+   
+  #-----------------------------------------
+
+  u_array : (n) -> (@u() for i in [0...n])
+   
+  #-----------------------------------------
+
+  u_map : (n) ->
+    ret = {}
+    for i in [0...n]
+      ret[@u()] = @u()
+    return ret
+     
+  #-----------------------------------------
+
+  u_uint8 = () -> @_buffer.consume_byte()
+  u_int8 = () -> twos_compl_inv @u_uint8()
+  u_uint16 = () ->
+    v = @_buffer.consume_bytes 2
+    return (v[0] << 8 | v[1])
+  u_int16 = () -> twos_compl_inv @u_int16()
+  u_uint32 = () ->
+    v = @_buffer.consume_bytes 4
+    return ((v[0] << 24) | (v[1] << 16) | (v[2] << 8) | v[3])
+  u_int32 = () -> return twos_compl_inv @u_uint32
+  u_uint64 = () -> (@u_uint32() * U32MAX) + @u_uint32()
+  u_int64 = () ->
+    [a,b] = u64max_minus_i @u_uint64()
+    return -1 * a * U32MAX - b
+    
+  #-----------------------------------------
+
   error : (e) ->
     @_e.push e
     null
@@ -25,7 +58,7 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u : () ->
-    b = @_buffer.get_byte()
+    b = @_buffer.consume_byte()
     if b <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
       twos_compl_inv b, 8

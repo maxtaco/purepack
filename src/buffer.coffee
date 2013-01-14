@@ -212,8 +212,20 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
-  get_byte : () -> @_b.shift()
+  consume_byte : () -> @_b.shift()
   
+  #-----------------------------------------
+
+  consume_bytes : (n) ->
+    ret = @_b[0...n]
+    @_b = @_b[n...]
+    return ret
+   
+  #-----------------------------------------
+
+  consume_string : (n) ->
+    String.fromCharCode consume_bytes n
+   
   #-----------------------------------------
   
         

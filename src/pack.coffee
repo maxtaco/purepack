@@ -1,14 +1,12 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
-{pow2,rshift,twos_compl} = require './util'
+{pow2,rshift,twos_compl,U32MAX,u64max_minus_i} = require './util'
 
 ##=======================================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
-U32MAX = pow2(32)
-
 ##=======================================================================
 
 exports.Packer = class Packer
@@ -54,39 +52,10 @@ exports.Packer = class Packer
   # p_neg_int64 -- Pack integer i < -2^31 into a signed quad,
   #   up until the JS resolution cut-off at least.  
   # 
-  # The challenge is to express the integer i in the form
-  # 2^64 - |i| as per standard 2's complement, and then put both
-  # words in the buffer stream.  There's the way it's done:
-  #
-  #   Given input i, pick x and y such that |i| = 2^32 x + y,
-  #   where x,y are both positive, and both less than 2^32.
-  #
-  #   Now we can write:
-  # 
-  #       2^64 - |i| = 2^64 - 2^32 x - y
-  #
-  #   Factoring and rearranging:
-  # 
-  #       2^64 - |i| = 2^32 * (2^32 - x - 1) + (2^32 - y)
-  # 
-  #   Thus, we've written:
-  #
-  #        2^64 - |i| =  2^32 a + b
-  #
-  #   Where 0 <= a,b < 2^32. In particular:
-  #
-  #       a = 2^32 - x - 1
-  #       b = 2^32 - y
-  #
-  #   And this satisfies our need to put two positive ints into
-  #   stream.
   # 
   p_neg_int64 : (i) ->
     abs_i = 0 - i
-    x = Math.floor( abs_i / U32MAX)
-    y = abs_i & (U32MAX - 1)
-    a = U32MAX - x - 1
-    b = U32MAX - y
+    [a,b] = u64max_minus_i abs_i
     @p_int a
     @p_int b
    
