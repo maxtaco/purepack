@@ -83,7 +83,7 @@ exports.Buffer = class Buffer
     p = 0
     for c in [0...l] by 5
       b[p++] = @B32.fwd[@_get(c) >> 3]
-      b[p++] = @B32.fwd[@_get(c) & 0x7 | @_get(++c) >> 6]        if p < outlen
+      b[p++] = @B32.fwd[(@_get(c) & 0x7) << 2 | @_get(++c) >> 6] if p < outlen
       b[p++] = @B32.fwd[@_get(c) >> 1 & 0x1f]                    if p < outlen
       b[p++] = @B32.fwd[(@_get(c) & 0x1) << 4 | @_get(++c) >> 4] if p < outlen
       b[p++] = @B32.fwd[(@_get(c) & 0xf) << 1 | @_get(++c) >> 7] if p < outlen
@@ -135,7 +135,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   binary_decode : (b) ->
-    @_b = b
+    @_b = (b.charCodeAt i for i in [0...b.length])
     @
     
   #-----------------------------------------
@@ -183,14 +183,17 @@ exports.Buffer = class Buffer
       # We can't use bitwise right shift here (or bitwise OR)
       # since that will break when we're above 32 bits.  Of course
       # we have a 40-bit window for base32-encodings.
+      before = sum
       sum = (sum * 32) + v
       
       if i % 8 is 7
-        sum = 0
         
         # Again, we don't use '>>' but instead 'rshift', which
         # can handle numbers above 2^32.
-        @push_byte(rshift(sum,i*8) & 0xff) for i in [4..0]
+        @push_byte(rshift(sum,j*8) & 0xff) for j in [4..0]
+
+        # clear out the sum for the next time through the loop
+        sum = 0
 
     # now we have to futz with the remainder
     if (rem = data.length % 8) isnt 0
