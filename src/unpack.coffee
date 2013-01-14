@@ -55,6 +55,11 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
+  u_double : () -> @error "Sorry, I can't decode doubles yet..."
+  u_float  : () -> @error "Sorry, I can't decode floats yet..."
+  
+  #-----------------------------------------
+
   # This is, as usual, a bit subtle.  Here is what we get:
   #
   #     x = 2^32*a + b

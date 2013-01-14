@@ -81,6 +81,12 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
+  # This is horrible, but do it for now....
+  # Eventually I hope to get around to it...
+  p_pack_double : (d) -> @p_number Math.floor d
+   
+  #-----------------------------------------
+
   p_byte : (b) -> @_buffer.push_byte twos_compl b, 8
   p_short: (s) -> @_buffer.push_short twos_compl s, 16
   p_int  : (i) -> @_buffer.push_int twos_compl i, 32
