@@ -20,15 +20,15 @@ exports.C =
 	array32              : 0xdd
 	map16                : 0xde
 	map32                : 0xdf
-	fix_raw              : 0xa0
+	fix_raw_min          : 0xa0
 	fix_raw_max          : 0xbf
 	fix_array_min        : 0x90
 	fix_array_max        : 0x9f
 	fix_map_min          : 0x80
 	fix_map_max          : 0x8f
-	fix_array_counmask   : 0xf
-	fix_map_counmask     : 0xf
-	fix_raw_counmask     : 0x1f
+	fix_array_count_mask : 0xf
+	fix_map_count_mask   : 0xf
+	fix_raw_count_mask   : 0x1f
 	negative_fix_min     : 0xe0
 	negative_fix_max     : 0xff
 	negative_fix_mask    : 0x1f

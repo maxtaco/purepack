@@ -118,7 +118,6 @@ exports.Buffer = class Buffer
       # push the translation chars onto the b vector
       b.push M.fwd[(n >>> i*6) & 0x3f] for i in [3..0]
 
-
     return (b[0...(b.length - p.length)].concat p).join ''
 
   #-----------------------------------------
@@ -210,6 +209,12 @@ exports.Buffer = class Buffer
       @push_byte(rshift(sum,i*8) & 0xff) for i in [4...(4-nmb)]
 
     @ # success at last
+
+  #-----------------------------------------
+
+  get_byte : () -> @_b.shift()
+  
+  #-----------------------------------------
   
         
 ##=======================================================================

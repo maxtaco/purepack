@@ -1,13 +1,12 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
-{pow2,rshift} = require './util'
+{pow2,rshift,twos_compl} = require './util'
 
 ##=======================================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
-twos_comp = (x, n) -> if x < 0 then pow2(n) - Math.abs(x) else x
 U32MAX = pow2(32)
 
 ##=======================================================================
@@ -45,9 +44,9 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_byte : (b) -> @_buffer.push_byte twos_comp b, 8
-  p_short: (s) -> @_buffer.push_short twos_comp s, 16
-  p_int  : (i) -> @_buffer.push_int twos_comp i, 32
+  p_byte : (b) -> @_buffer.push_byte twos_compl b, 8
+  p_short: (s) -> @_buffer.push_short twos_compl s, 16
+  p_int  : (i) -> @_buffer.push_int twos_compl i, 32
 
   #-----------------------------------------
 
@@ -149,7 +148,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_bytes : (b) ->
-    @p_len b.length, C.fix_raw, C.raw16, C.raw32
+    @p_len b.length, C.fix_raw_min, C.raw16, C.raw32
     @_buffer.push_bytes b
 
   #-----------------------------------------
