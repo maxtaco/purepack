@@ -1,8 +1,7 @@
 
 {C} = require './const'
 {Buffer} = require './buffer'
-{pow2,twos_compl_inv,U32MAX,u64max_minus_i} = require './util'
-  
+{pow2,twos_compl_inv,U32MAX} = require './util'
 
 ##=======================================================================
 
@@ -53,6 +52,26 @@ exports.Unpacker = class Unpacker
   u_int32 : () ->
     return twos_compl_inv @u_uint32(), 32
   u_uint64 : () -> (@u_uint32() * U32MAX) + @u_uint32()
+
+  #-----------------------------------------
+
+  # This is, as usual, a bit subtle.  Here is what we get:
+  #
+  #     x = 2^32*a + b
+  #
+  # comes in out of the buffer, by calling u_uint32() as normal.
+  # We seek the value x - 2^64 as the output, but we have to do it
+  # in a smart way.  So we write:
+  #
+  #    x - 2^64 = 2^32*a + b - 2^64
+  #
+  # And factor:
+  #
+  #    x - 2^64 = 2^32(a - 2^32) + b
+  #
+  # And this is good enough, since (a - 2^32) is going to have a small
+  # absolute value, for small values of a.
+  # 
   u_int64 : () ->
     [a,b] = (@u_uint32() for i in [0...2])
     U32MAX*(a - U32MAX) + b
