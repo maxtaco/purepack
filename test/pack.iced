@@ -9,7 +9,6 @@ compare = (T, obj, nm) ->
   e2 = purepack.pack(obj,enc)
   T.equal e1, e2, nm
 
-
 exports.pack1 = (T, cb) ->
   compare T, "hello", "pack1"
   cb()
@@ -26,6 +25,7 @@ exports.pack3 = (T, cb) ->
   compare T, [-2147483668...-2147483628], "pack3 test 5"
   compare T, [0xfff0...0x1000f], "pack3 test 6"
   compare T, [0xfffffff0...0x10000000f], "pack3 test 7"
+  compare T, -2147483649, "pack 3 test 8"
   cb()
 
 exports.pack5 = (T, cb) ->

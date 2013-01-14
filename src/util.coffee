@@ -46,7 +46,7 @@ exports.twos_compl_inv = (x, n) -> x - pow2(n)
 # 
 exports.u64max_minus_i = (i) ->
   x = Math.floor( i / U32MAX)
-  y = i & (U32MAX - 1)
-  a = U32MAX - x - 1 # should be U32MAX - x - (if y > 0 then 1 else 0)
-  b = U32MAX - y     # should be (if y is 0 then 0 else U32MAX - y)
+  y = i % U32MAX
+  a = U32MAX - x - (if y > 0 then 1 else 0)
+  b = if y is 0 then 0 else U32MAX - y
   return [a, b]
