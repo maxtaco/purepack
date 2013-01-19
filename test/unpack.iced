@@ -29,6 +29,11 @@ exports.unpack3 = (T, cb) ->
   compare T, [0xfffffff0...0x10000000f], "unpack3 test 7"
   compare T, -2147483649, "unpack 3 test 8"
   cb()
+  
+exports.unpack4 = (T, cb) ->
+  compare T, [ 1.1, 10.1, 20.333, 44.44444, 5.555555], "various floats"
+  compare T, [ -1.1, -10.1, -20.333, -44.44444, -5.555555], "various neg floats"
+  cb()
 
 exports.unpack5 = (T, cb) ->
   

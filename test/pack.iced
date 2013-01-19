@@ -28,6 +28,11 @@ exports.pack3 = (T, cb) ->
   compare T, -2147483649, "pack 3 test 8"
   cb()
 
+exports.pack4 = (T, cb) ->
+  compare T, [ 1.1, 10.1, 20.333, 44.44444, 5.555555], "various floats"
+  compare T, [ -1.1, -10.1, -20.333, -44.44444, -5.555555], "various neg floats"
+  cb()
+
 exports.pack5 = (T, cb) ->
   
   obj =

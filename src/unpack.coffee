@@ -2,6 +2,7 @@
 {C} = require './const'
 {Buffer} = require './buffer'
 {pow2,twos_compl_inv,U32MAX} = require './util'
+floats = require './floats'
 
 ##=======================================================================
 
@@ -55,9 +56,18 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
-  u_double : () -> @error "Sorry, I can't decode doubles yet..."
-  u_float  : () -> @error "Sorry, I can't decode floats yet..."
-  
+  u_double : () ->
+    cnv = floats.Converter.make @_buffer
+    if cnv? then cnv.consume_float64()
+    else @error "Sorry, no float64 decoding support"
+    
+  #-----------------------------------------
+
+  u_float : () ->
+    cnv = floats.Converter.make @_buffer
+    if cnv? then cnv.consume_float32()
+    else @error "Sorry, no float32 decoding support"
+    
   #-----------------------------------------
 
   # This is, as usual, a bit subtle.  Here is what we get:

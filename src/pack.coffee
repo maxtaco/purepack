@@ -2,6 +2,7 @@
 {C} = require './const'
 {Buffer} = require './buffer'
 {pow2,rshift,twos_compl,U32MAX} = require './util'
+floats = require './floats'
 
 ##=======================================================================
 
@@ -81,9 +82,13 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  # This is horrible, but do it for now....
-  # Eventually I hope to get around to it...
-  p_pack_double : (d) -> @p_number Math.floor d
+  p_pack_double : (d) ->
+    cnv = floats.Converter.make @_buffer
+    if cnv?
+      @p_byte C.double
+      cnv.pack_float64 d
+    else
+      @p_number Math.floor d
    
   #-----------------------------------------
 

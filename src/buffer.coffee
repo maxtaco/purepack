@@ -31,6 +31,13 @@ exports.Buffer = class Buffer
   push_int    : (i) -> @push_ibytes i, 3
   
   #-----------------------------------------
+
+  push_buffer : (b) ->
+    for i in [0...b.length]
+      @push_byte b[i]
+    @
+   
+  #-----------------------------------------
   
   push_bytes  : (a) ->
     for i in [0...a.length]
