@@ -1,0 +1,14 @@
+{
+  "name" : "purepack",
+  "version" : "0.0.1",
+  "description" : "Mainly pure JS implementation of msgpack, with some browser help for doubles",
+  "homepage" : "https://github.com/maxtaco/purepack",
+  "repository" : { 
+    "type" : "git",
+     "url" : "https://github.com/maxtaco/purepack.git"
+  },
+  "licenses": [{
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+  }]
+}
