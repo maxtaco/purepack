@@ -12,6 +12,11 @@ class CharMap
 
 ##=======================================================================
 
+#
+# This buffer is made up of a chain of Uint8Arrays, each of fixed size.
+# This is a good performance boost over a standard array, but of course
+# we can't push() onto it...
+# 
 exports.Buffer = class Buffer
 
   B16 : new CharMap "0123456789abcdef"
@@ -22,11 +27,35 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
   
-  constructor : () -> @_b = []
+  constructor : () ->
+    @_buffers = []
+    @_sz = 0x400
+    @_logsz = 10
+    @_push_new_buffer()
+    @_i = 0
+    @_b = 0
+    @_cp = 0
+    @_tot = 0
 
   #-----------------------------------------
   
-  push_byte   : (b) -> @_b.push b
+  _push_new_buffer : () ->
+    @_b = @_buffers.length
+    @_i = 0
+    nb = new Uint8Array @_sz
+    @_buffers.push nb
+    nb
+
+  #-----------------------------------------
+   
+  push_byte   : (b) ->
+    buf = @_buffers[@_b]
+    (buf = @_push_new_buffer()) if @_i is @_sz
+    buf[@_i++] = b
+    @_tot++
+  
+  #-----------------------------------------
+  
   push_short  : (s) -> @push_ibytes s, 1
   push_int    : (i) -> @push_ibytes i, 3
   
@@ -62,20 +91,29 @@ exports.Buffer = class Buffer
       
   #-----------------------------------------
 
-  _get : (i) -> if i < @_b.length then @_b[i] else 0
+  _get : (i) ->
+    bi = i >>> @_logsz
+    li = i % @_sz
+    lim = if bi is @_b then @_i else @_sz
+    ret = if bi <= @_b and li < lim then @_buffers[bi][li]
+    else 0
+    ret
    
   #-----------------------------------------
 
-  binary_encode : () -> String.fromCharCode @_b...
+  binary_encode : () ->
+    v = (@_get i for i in [0...@_tot])
+    String.fromCharCode v...
    
   #-----------------------------------------
 
   base16_encode : () ->
-    tmp = []
-    for c,i in @_b
-      tmp[(i << 1)]   = @B16.fwd[(c >> 4)]
-      tmp[(i << 1)+1] = @B16.fwd[(c & 0xf)]
-    return tmp.join ''
+    tmp = "" 
+    for i in [0...@_tot]
+      c = @_get i
+      tmp += @B16.fwd[(c >> 4)]
+      tmp += @B16.fwd[(c & 0xf)]
+    tmp
    
   #-----------------------------------------
 
@@ -83,7 +121,7 @@ exports.Buffer = class Buffer
     # Taken from okws/sfslite armor.C / armor32()
     
     b = []
-    l = @_b.length
+    l = @_tot
 
     outlen = Math.floor(l / 5) * 8 + [0,2,4,5,7][l%5]
 
@@ -111,7 +149,7 @@ exports.Buffer = class Buffer
   _base64_encode : (M) ->
     # b = the base array, p = the pad array
     b = []
-    l = @_b.length
+    l = @_tot
     
     # Add the pad so that we're a multiple of 3 bytes
     c = l % 3
@@ -141,7 +179,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   binary_decode : (b) ->
-    @_b = (b.charCodeAt i for i in [0...b.length])
+    (@push_byte b.charCodeAt i for i in [0...b.length])
     @
     
   #-----------------------------------------
@@ -219,17 +257,17 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
-  consume_byte : () -> @_b.shift()
+  consume_byte : () -> @_get @_cp++
   
   #-----------------------------------------
 
-  consume_bytes : (n) ->
-    ret = @_b[0...n]
-    @_b = @_b[n...]
-    return ret
+  consume_bytes : (n) -> (@consume_byte() for i in [0...n])
    
   #-----------------------------------------
 
+  # This is bad for performance.  Would be better to copy in chunks;
+  # however, we're still limited by fromCharCode to go byte by byte,
+  # so maybe it's not worth it in the end
   consume_string : (n) ->
     String.fromCharCode (@consume_bytes n)...
    
