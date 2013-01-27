@@ -90,7 +90,12 @@ exports.Buffer = class Buffer
       when 'base32'  then @base32_encode()
       when 'hex'     then @base16_encode()
       when 'binary'  then @binary_encode()
+      when 'ui8a'    then @ui8a_encode()
       
+  #-----------------------------------------
+
+  encode : (e) -> @toString e
+   
   #-----------------------------------------
 
   _get : (i) ->
@@ -101,6 +106,13 @@ exports.Buffer = class Buffer
     else 0
     ret
    
+  #-----------------------------------------
+
+  ui8a_encode : () ->
+    out = new Uint8Array @_tot
+    (out[i] = @_get i for i in [0...@_tot])
+    out
+  
   #-----------------------------------------
 
   binary_encode : () ->
@@ -177,13 +189,13 @@ exports.Buffer = class Buffer
       when 'base64x' then (new Buffer).base64x_decode s
       when 'base32'  then (new Buffer).base32_decode s
       when 'hex'     then (new Buffer).base16_decode s
-      when 'null'    then (new Buffer).null_decode s
+      when 'ui8a'    then (new Buffer).ui8a_decode s
      
   #-----------------------------------------
 
   # Just call the given array the whole thing, and give up on
   # 2d-indexing. Once you do this, you can't push anymore bytes on
-  null_decode : (v) ->
+  ui8a_decode : (v) ->
     @_buffers = [ v ]
     @_logsz = 0
     @_tot = @_sz = @_i = v.length
