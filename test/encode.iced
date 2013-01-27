@@ -37,4 +37,17 @@ exports.in_and_out = (T, cb) ->
       after = purepack.Buffer.decode(enc,typ).toString('binary')
       T.equal before, after, "#{typ} i=#{i}"
   cb()
-    
+
+test_null_encoding = (T, m, note) ->
+  v = new Uint8Array m.length
+  for i in [0...v.length]
+    v[i] = m.charCodeAt i
+  buf = purepack.Buffer.decode v, "null"
+  after = buf.toString('binary')
+  T.equal m, after, "null encoding #{note}"
+  
+exports.null_encoding = (T, cb) ->
+  test_null_encoding T, m1, "ascii"    
+  test_null_encoding T, m2, "binary"    
+  test_null_encoding T, m3, "mixed"
+  cb()

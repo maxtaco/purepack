@@ -36,6 +36,7 @@ exports.Buffer = class Buffer
     @_b = 0
     @_cp = 0
     @_tot = 0
+    @_no_push = false
 
   #-----------------------------------------
   
@@ -49,6 +50,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
    
   push_byte   : (b) ->
+    throw new Error "Cannot push anymore into this buffer" if @_no_push
     buf = @_buffers[@_b]
     (buf = @_push_new_buffer()) if @_i is @_sz
     buf[@_i++] = b
@@ -92,7 +94,7 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   _get : (i) ->
-    bi = i >>> @_logsz
+    bi = if @_logsz then (i >>> @_logsz) else 0
     li = i % @_sz
     lim = if bi is @_b then @_i else @_sz
     ret = if bi <= @_b and li < lim then @_buffers[bi][li]
@@ -175,9 +177,21 @@ exports.Buffer = class Buffer
       when 'base64x' then (new Buffer).base64x_decode s
       when 'base32'  then (new Buffer).base32_decode s
       when 'hex'     then (new Buffer).base16_decode s
+      when 'null'    then (new Buffer).null_decode s
      
   #-----------------------------------------
 
+  # Just call the given array the whole thing, and give up on
+  # 2d-indexing. Once you do this, you can't push anymore bytes on
+  null_decode : (v) ->
+    @_buffers = [ v ]
+    @_logsz = 0
+    @_tot = @_sz = @_i = v.length
+    @_no_push = true
+    @
+
+  #-----------------------------------------
+  
   binary_decode : (b) ->
     (@push_byte b.charCodeAt i for i in [0...b.length])
     @
