@@ -147,7 +147,6 @@ exports.unpack = (x, enc = 'base64') ->
     err = unpacker.get_error()
   else
     err = "Decoding type '#{enc}' failed"
-  throw new Error err if err?
-  return res
+  return [err, res]
     
 ##=======================================================================

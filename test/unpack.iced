@@ -5,7 +5,7 @@ purepack = require '../src/main'
 compare = (T, obj, nm) ->
   enc = "base64"
   packed = purepack.pack obj, enc
-  unpacked = purepack.unpack packed, enc
+  [err, unpacked] = purepack.unpack packed, enc
   T.assert (not err?)
   T.equal obj, unpacked, nm
 
