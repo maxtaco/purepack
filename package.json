@@ -7,6 +7,10 @@
     "type" : "git",
      "url" : "https://github.com/maxtaco/purepack.git"
   },
+  "directories" : {
+     "lib" : "lib"
+  },		
+  "main" : "lib/main",
   "licenses": [{
       "type": "MIT",
       "url": "http://www.opensource.org/licenses/mit-license.php"
