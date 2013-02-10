@@ -65,9 +65,10 @@ exports.Packer = class Packer
 
   p : (o) ->
     switch typeof o
-      when 'number'  then @p_number o
-      when 'string'  then @p_bytes o
-      when 'boolean' then @p_boolean o
+      when 'number'         then @p_number o
+      when 'string'         then @p_bytes o
+      when 'boolean'        then @p_boolean o
+      when 'undefined'      then @p_null()
       when 'object'
         if not o?          then @p_null()
         else if is_array o then @p_array o

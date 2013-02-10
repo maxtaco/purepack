@@ -67,3 +67,9 @@ exports.pack7 = (T, cb)  ->
   compare T, obj, "pack7"
   cb()
 
+exports.pack8 = (T, cb)  ->
+  d = {}
+  obj = d.yuck
+  compare T, obj, "pack8"
+  cb()
+
