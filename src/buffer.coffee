@@ -99,11 +99,13 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   _get : (i) ->
-    bi = if @_logsz then (i >>> @_logsz) else 0
-    li = i % @_sz
-    lim = if bi is @_b then @_i else @_sz
-    ret = if bi <= @_b and li < lim then @_buffers[bi][li]
-    else 0
+    ret = if i >= @_tot then 0
+    else
+      bi = if @_logsz then (i >>> @_logsz) else 0
+      li = i % @_sz
+      lim = if bi is @_b then @_i else @_sz
+      if bi <= @_b and li < lim then @_buffers[bi][li]
+      else 0
     ret
    
   #-----------------------------------------

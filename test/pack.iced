@@ -49,5 +49,21 @@ exports.pack5 = (T, cb) ->
           potato : [10..20]
   compare T, obj, "pack5"
   cb()
-  
+
+exports.pack6 = (T, cb)  ->
+  obj =
+    notes : null
+    algo_version : 3
+    generation : 1
+    email : "themax@gmail.com"
+    length : 12
+    num_symbols : 0
+    security_bits : 8 
+  compare T, obj, "pack6"
+  cb()
+
+exports.pack7 = (T, cb)  ->
+  obj = "themax@gmail.com"
+  compare T, obj, "pack7"
+  cb()
 

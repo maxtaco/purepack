@@ -117,14 +117,14 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_array : (a) ->
-    @p_len a.length, C.fix_array_min, C.array16, C.array32
+    @p_len a.length, C.fix_array_min, C.fix_array_max, C.array16, C.array32
     @p e for e in a
    
   #-----------------------------------------
 
   p_obj : (o) ->
     n = (Object.keys o).length
-    @p_len n, C.fix_map_min, C.map16, C.map32
+    @p_len n, C.fix_map_min, C.fix_map_max, C.map16, C.map32
     for k,v of o
       @p k
       @p v
@@ -172,9 +172,9 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_len : (l, s, m, b) ->
-    if l <= 0xf
-      @p_byte (l|s)
+  p_len : (l, smin, smax, m, b) ->
+    if l <= (smax - smin)
+      @p_byte (l|smin)
     else if l <= 0xffff
       @p_byte m
       @p_short l
