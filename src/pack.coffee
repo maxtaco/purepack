@@ -168,7 +168,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_bytes : (b) ->
-    @p_len b.length, C.fix_raw_min, C.raw16, C.raw32
+    @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_bytes b
 
   #-----------------------------------------
