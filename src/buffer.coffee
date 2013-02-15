@@ -290,14 +290,21 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   consume_bytes : (n) -> (@consume_byte() for i in [0...n])
-   
+
   #-----------------------------------------
 
   # This is bad for performance.  Would be better to copy in chunks;
   # however, we're still limited by fromCharCode to go byte by byte,
   # so maybe it's not worth it in the end
   consume_string : (n) ->
-    String.fromCharCode (@consume_bytes n)...
+    i = 0
+    chunksz = 2048
+    parts = while i < n
+      s = n - i
+      if s > chunksz then s = chunksz
+      i += s
+      String.fromCharCode (@consume_bytes s)...
+    parts.join ''
    
   #-----------------------------------------
   

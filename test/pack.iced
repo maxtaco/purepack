@@ -79,3 +79,10 @@ exports.pack9 = (T,cb) ->
   d = { obj }
   compare T, obj, "pack9b"
   cb()
+
+exports.pack10 = (T,cb) ->
+  obj = (i for i in [1...30000]).join ' '
+  compare T, obj, "pack10a"
+  d = { obj }
+  compare T, obj, "pack10b"
+  cb()

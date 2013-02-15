@@ -51,5 +51,17 @@ exports.unpack5 = (T, cb) ->
           potato : [10..20]
   compare T, obj, "unpack5"
   cb()
-  
 
+exports.unpack6 = (T,cb) ->
+  obj = (i for i in [1...100]).join ' '
+  compare T, obj, "unpack6a"
+  d = { obj }
+  compare T, obj, "unpack6b"
+  cb()
+
+exports.unpack7 = (T,cb) ->
+  obj = (i for i in [1...23000]).join ' '
+  compare T, obj, "unpack6a"
+  d = { obj }
+  compare T, obj, "unpack6b"
+  cb()
