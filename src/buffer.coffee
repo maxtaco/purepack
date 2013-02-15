@@ -114,7 +114,7 @@ exports.Buffer = class Buffer
       else if not n? then @_buffers[bi][li]
       else
         n = Math.min( lim - li, n )
-        @_buffers[bi][li...(li+n)]
+        @_buffers[bi].subarray(li, (li+n))
     ret
    
   #-----------------------------------------
