@@ -113,8 +113,7 @@ exports.Buffer = class Buffer
         else 0
       else if not n? then @_buffers[bi][li]
       else
-        left = lim - li
-        if n > left then n = left
+        n = Math.min( lim - li, n )
         @_buffers[bi][li...(li+n)]
     ret
    
@@ -316,10 +315,9 @@ exports.Buffer = class Buffer
   # alternatives....
   consume_string : (n) ->
     i = 0
-    chunksz = 2048
+    chunksz = 0x800
     parts = while i < n
-      s = n - i
-      if s > chunksz then s = chunksz
+      s = Math.min( n - i, chunksz )
       chnk = @consume_chunk s
       i += chnk.length
       String.fromCharCode chnk...
