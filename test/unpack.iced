@@ -61,7 +61,14 @@ exports.unpack6 = (T,cb) ->
 
 exports.unpack7 = (T,cb) ->
   obj = (i for i in [1...23000]).join ' '
-  compare T, obj, "unpack6a"
+  compare T, obj, "unpack7a"
   d = { obj }
-  compare T, obj, "unpack6b"
+  compare T, obj, "unpack7b"
+  cb()
+
+exports.unpack8 = (T,cb) ->
+  obj = (String.fromCharCode(i&0xff) for i in [1...23000]).join ''
+  compare T, obj, "unpack8a"
+  d = { obj }
+  compare T, obj, "unpack8b"
   cb()
