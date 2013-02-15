@@ -98,14 +98,24 @@ exports.Buffer = class Buffer
    
   #-----------------------------------------
 
-  _get : (i) ->
+  # Get n characters starting at index i.
+  # If n is null, then assume just 1 character and return
+  # as a scalar.  Otherwise, return as a list of chars.
+  _get : (i, n = null) ->
     ret = if i >= @_tot then 0
     else
-      bi = if @_logsz then (i >>> @_logsz) else 0
-      li = i % @_sz
-      lim = if bi is @_b then @_i else @_sz
-      if bi <= @_b and li < lim then @_buffers[bi][li]
-      else 0
+      bi = if @_logsz then (i >>> @_logsz) else 0 # buffer index
+      li = i % @_sz                               # local index
+      lim = if bi is @_b then @_i else @_sz       # local limit
+
+      ret = if bi > @_b or li >= lim 
+        if n? then []
+        else 0
+      else if not n? then @_buffers[bi][li]
+      else
+        left = lim - li
+        if n > left then n = left
+        @_buffers[bi][li...(li+n)]
     ret
    
   #-----------------------------------------
@@ -293,6 +303,13 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
+  consume_chunk : (n) ->
+    ret = @_get @_cp, n
+    @_cp += ret.length
+    ret
+
+  #-----------------------------------------
+
   # This is bad for performance.  Would be better to copy in chunks;
   # however, we're still limited by fromCharCode to go byte by byte,
   # so maybe it's not worth it in the end
@@ -302,8 +319,9 @@ exports.Buffer = class Buffer
     parts = while i < n
       s = n - i
       if s > chunksz then s = chunksz
-      i += s
-      String.fromCharCode (@consume_bytes s)...
+      chnk = @consume_chunk s
+      i += chnk.length
+      String.fromCharCode chnk...
     parts.join ''
    
   #-----------------------------------------
