@@ -310,9 +310,10 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
-  # This is bad for performance.  Would be better to copy in chunks;
-  # however, we're still limited by fromCharCode to go byte by byte,
-  # so maybe it's not worth it in the end
+  # Consume a string of n bytes, in 2K chunks.
+  # Still need to call String.fromCharCode on them
+  # in a pretty awkward way.  Maybe we should look for
+  # alternatives....
   consume_string : (n) ->
     i = 0
     chunksz = 2048
