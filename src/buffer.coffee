@@ -98,19 +98,22 @@ exports.Buffer = class Buffer
    
   #-----------------------------------------
 
+  bytes_left : () -> @_tot - @_cp
+
+  #-----------------------------------------
+
   # Get n characters starting at index i.
   # If n is null, then assume just 1 character and return
   # as a scalar.  Otherwise, return as a list of chars.
   _get : (i, n = null) ->
-    ret = if i >= @_tot then 0
+    zero_pad = if n? then ( 0 for j in [0...n] ) else 0
+    ret = if i >= @_tot then zero_pad
     else
       bi = if @_logsz then (i >>> @_logsz) else 0 # buffer index
       li = i % @_sz                               # local index
       lim = if bi is @_b then @_i else @_sz       # local limit
 
-      ret = if bi > @_b or li >= lim 
-        if n? then []
-        else 0
+      ret = if bi > @_b or li >= lim then zero_pad
       else if not n? then @_buffers[bi][li]
       else
         n = Math.min( lim - li, n )
@@ -316,6 +319,10 @@ exports.Buffer = class Buffer
   consume_string : (n) ->
     i = 0
     chunksz = 0x800
+    bl = @bytes_left()
+    if n > bl
+      console.log "Corruption: asked for #{n} bytes, but only #{bl} available"
+      n = bl
     parts = while i < n
       s = Math.min( n - i, chunksz )
       chnk = @consume_chunk s

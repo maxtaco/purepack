@@ -72,3 +72,34 @@ exports.unpack8 = (T,cb) ->
   d = { obj }
   compare T, obj, "unpack8b"
   cb()
+
+exports.unpack9 = (T,cb)->
+  obj = 
+    email : "themax@gmail.com"
+    notes : "not active yet, still using old medium security. update this note when fixed."
+    algo_version : 3,
+    length : 12
+    num_symbols : 0
+    generation : 1
+    security_bits : 8
+  compare T, obj, "unpack9"
+  cb()
+
+exports.corrupt1 = (T,cb) ->
+  x = new Uint8Array([135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97, 
+                      120, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 165, 110, 111, 
+                      116, 101, 115, 219, 0, 77, 110, 111, 116, 32, 97, 99, 116, 105, 118, 
+                      101, 32, 121, 101, 116, 44, 32, 115, 116, 105, 108, 108, 32, 117, 115, 
+                      105, 110, 103, 32, 111, 108, 100, 32, 109, 101, 100, 105, 117, 109, 
+                      32, 115, 101, 99, 117, 114, 105, 116, 121, 46, 32, 117, 112, 100, 97, 
+                      116, 101, 32, 116, 104, 105, 115, 32, 110, 111, 116, 101, 32, 119, 104, 
+                      101, 110, 32, 102, 105, 120, 101, 100, 46, 172, 97, 108, 103, 111, 95, 
+                      118, 101, 114, 115, 105, 111, 110, 3, 166, 108, 101, 110, 103, 116, 104, 
+                      12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8, 
+                      171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101, 
+                      110, 101, 114, 97, 116, 105, 111, 110, 1])
+  [ err, res ] = purepack.unpack x, 'ui8a'
+  T.assert not err
+  T.assert res.notes.match /^t active yet/
+  T.assert res.email is 'themax@gmail.com'
+  cb()

@@ -101,7 +101,7 @@ exports.Unpacker = class Unpacker
 
   u : () ->
     b = @_buffer.consume_byte()
-    if b <= C.positive_fix_max then b
+    ret = if b <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
       twos_compl_inv b, 8
     else if b >= C.fix_raw_min and b <= C.fix_raw_max
@@ -135,6 +135,7 @@ exports.Unpacker = class Unpacker
         when C.map16 then @u_map @u_uint16()
         when C.map32 then @u_map @u_uint32()
         else @error "unhandled type #{b}"
+    ret
       
 ##=======================================================================
 
