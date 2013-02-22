@@ -53,7 +53,7 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  constructor: ->
+  constructor: (@_opts) ->
     @_buffer = new Buffer()
 
   #-----------------------------------------
@@ -85,11 +85,14 @@ exports.Packer = class Packer
 
   p_pack_double : (d) ->
     cnv = floats.Converter.make @_buffer
-    if cnv?
+    if not cnv?
+      @p_number Math.floor d
+    else if @_opts.floats?
+      @p_byte C.float
+      cnv.pack_float32 d
+    else
       @p_byte C.double
       cnv.pack_float64 d
-    else
-      @p_number Math.floor d
    
   #-----------------------------------------
 
@@ -187,8 +190,8 @@ exports.Packer = class Packer
 
 ##=======================================================================
 
-exports.pack = (x, enc) ->
-  packer = new Packer()
+exports.pack = (x, enc, opts = {} ) ->
+  packer = new Packer opts
   packer.p x
   packer.output enc
   

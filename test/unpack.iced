@@ -2,7 +2,7 @@
 msgpack = require 'msgpack2'
 purepack = require '../src/main'
 
-compare = (T, obj, nm) ->
+compare = (T, obj, nm) -> 
   enc = "base64"
   packed = purepack.pack obj, enc
   [err, unpacked] = purepack.unpack packed, enc
@@ -105,3 +105,14 @@ exports.corrupt1 = (T,cb) ->
   T.assert warn? 
   T.equal warn[0], "Corruption: asked for 5074543 bytes, but only 137 available"
   cb()
+
+exports.floats = (T,cb) ->
+  obj = [ 1.2222, -10.10, 200.200, -3333.333, -5000000, 50000000 ]
+  enc = "base64"
+  packed = purepack.pack obj, enc, floats : true
+  [err, unpacked] = purepack.unpack packed, enc
+  T.assert (not err?)
+  for val,i in obj
+    T.assert(Math.abs(val - unpacked[i]) < .0001)
+  cb()
+
