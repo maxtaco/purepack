@@ -11,6 +11,7 @@ exports.Unpacker = class Unpacker
   constructor : ()  ->
     @_buffer = null
     @_e = []
+    @_w = []
     
   #-----------------------------------------
   
@@ -19,11 +20,14 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u_raw : (n) ->
-    @_buffer.consume_string n
+    [warning, raw] = @_buffer.consume_string n
+    @_w.push warning if warning?
+    return raw
    
   #-----------------------------------------
 
   get_error : () -> if @_e.length then @_e else null
+  get_warning : () -> if @_w.length then @_w else null
    
   #-----------------------------------------
 
@@ -146,8 +150,9 @@ exports.unpack = (x, enc = 'base64') ->
   if (unpacker.decode x, enc)
     res = unpacker.u()
     err = unpacker.get_error()
+    warn = unpacker.get_warning()
   else
     err = "Decoding type '#{enc}' failed"
-  return [err, res]
+  return [err, res, warn]
     
 ##=======================================================================

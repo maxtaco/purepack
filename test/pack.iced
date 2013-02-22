@@ -86,3 +86,16 @@ exports.pack10 = (T,cb) ->
   d = { obj }
   compare T, obj, "pack10b"
   cb()
+
+exports.pack11 = (T,cb)->
+  obj = 
+    email : "themax@gmail.com"
+    notes : "not active yet, still using old medium security. update this note when fixed."
+    algo_version : 3,
+    length : 12
+    num_symbols : 0
+    generation : 1
+    security_bits : 8
+  compare T, obj, "unpack9"
+  cb()
+

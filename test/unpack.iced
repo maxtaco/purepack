@@ -98,8 +98,10 @@ exports.corrupt1 = (T,cb) ->
                       12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8, 
                       171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101, 
                       110, 101, 114, 97, 116, 105, 111, 110, 1])
-  [ err, res ] = purepack.unpack x, 'ui8a'
+  [ err, res, warn ] = purepack.unpack x, 'ui8a'
   T.assert not err
   T.assert res.notes.match /^t active yet/
   T.assert res.email is 'themax@gmail.com'
+  T.assert warn? 
+  T.equal warn[0], "Corruption: asked for 5074543 bytes, but only 137 available"
   cb()

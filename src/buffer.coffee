@@ -320,15 +320,17 @@ exports.Buffer = class Buffer
     i = 0
     chunksz = 0x800
     bl = @bytes_left()
+    w = null
     if n > bl
-      console.log "Corruption: asked for #{n} bytes, but only #{bl} available"
+      w = "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
     parts = while i < n
       s = Math.min( n - i, chunksz )
       chnk = @consume_chunk s
       i += chnk.length
       String.fromCharCode chnk...
-    parts.join ''
+    raw = parts.join ''
+    [w, raw]
    
   #-----------------------------------------
   
