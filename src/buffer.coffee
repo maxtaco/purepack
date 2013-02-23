@@ -48,6 +48,10 @@ exports.Buffer = class Buffer
     nb
 
   #-----------------------------------------
+
+  _left_in_buffer : () -> (@_sz - @_i)
+
+  #-----------------------------------------
    
   push_byte   : (b) ->
     throw new Error "Cannot push anymore into this buffer" if @_no_push
@@ -63,16 +67,58 @@ exports.Buffer = class Buffer
   
   #-----------------------------------------
 
-  push_buffer : (b) ->
-    for i in [0...b.length]
-      @push_byte b[i]
-    @
-   
+  push_raw_bytes : (s) ->
+    a = new Uint8Array(s.length)
+    for i in [0...s.length]
+      a[i] = s.charCodeAt i
+    @push_buffer a
+
   #-----------------------------------------
-  
-  push_bytes  : (a) ->
-    for i in [0...a.length]
-      @push_byte a.charCodeAt i
+
+  push_buffer : (input) ->
+
+    bp = 0
+    ep = input.length
+    while bp < ep
+      lib = @_left_in_buffer()
+      if lib is 0
+        slab = @_push_new_buffer()
+        lib = @_left_in_buffer()
+      else
+        slab = @_buffers[@_b]
+      n = Math.min(lib, ep - bp)
+      slab.set(input.subarray(bp, n), @_i)
+      @_i += n
+      @_tot += n
+      bp += n
+
+    @_push_new_buffer() if @_i is @_sz
+    @
+
+  #-----------------------------------------
+
+  push_utf8_codepoint : (c) ->
+    if c >= 0x10000
+      @push_byte( 0xf0 | ((c & 0x1c0000) >>> 18))
+      @push_byte( 0x80 | ((c & 0x3f000 ) >> 12 ))
+      @push_byte( 0x80 | ((c & 0xfc0   ) >>> 6))
+      @push_byte( 0x80 | ( c & 0x3f    ))
+    else if c >= 0x800
+      @push_byte( 0xe0 | ((c & 0xf000  ) >>> 12))
+      @push_byte( 0x80 | ((c & 0xfc0   ) >> 6))
+      @push_byte( 0x80 | ( c & 0x3f    ))
+    else if c >= 0x80 
+      @push_byte( 0xc0 | ((c & 0x7c0   ) >>> 6))
+      @push_byte( 0x80 | ( c & 0x3f    ))
+    else
+      @push_byte c
+
+  #-----------------------------------------
+
+  push_utf8_string : (s) ->
+    for i in [0...s.length]
+      cc = s.charCodeAt i
+      @push_utf8_codepoint cc
     @
 
   #-----------------------------------------
@@ -123,9 +169,11 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   ui8a_encode : () ->
-    out = new Uint8Array @_tot
-    (out[i] = @_get i for i in [0...@_tot])
-    out
+    hold = @_cp
+    @_cp = 0
+    [w, raw] = @consume_byte_array @_tot
+    @_cp = hold
+    raw
   
   #-----------------------------------------
 
@@ -312,27 +360,87 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
-  # Consume a string of n bytes, in 2K chunks.
-  # Still need to call String.fromCharCode on them
-  # in a pretty awkward way.  Maybe we should look for
-  # alternatives....
-  consume_string : (n) ->
+  consume_byte_array : (n) ->
     i = 0
-    chunksz = 0x800
+    [w,n] = @prep_byte_grab n
+    ret = new Uint8Array(n)
+    while i < n
+      chnk = @consume_chunk(n-i)
+      ret.set chnk, i
+      i += chnk.length
+    return [ w, ret ]
+   
+  #-----------------------------------------
+
+  prep_byte_grab : (n) ->
     bl = @bytes_left()
     w = null
     if n > bl
       w = "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
-    parts = while i < n
-      s = Math.min( n - i, chunksz )
+    return [w, n]
+  
+  #-----------------------------------------
+
+  consume_utf8_string : (n) ->
+    console.log "consuming #{n} bytes"
+    i = 0
+    [w,n] = @prep_byte_grab n
+    chnksz = 0x400
+    tmp = while i < n
+      s = Math.min n-i, chnksz
       chnk = @consume_chunk s
       i += chnk.length
-      String.fromCharCode chnk...
-    raw = parts.join ''
-    [w, raw]
-   
-  #-----------------------------------------
-  
-        
+      encode_chunk chnk
+    ret = decodeURIComponent tmp.join ''
+    [w, ret]
+
+##=======================================================================
+
+first_non_ascii = (chunk, start, end) ->
+  for i in [start...end]
+    return i if chunk[i] >= 0x80
+  return end
+
+encode_byte = (b) ->
+  ub = ((b >>> 4) & 0xf).toString(16)
+  lb = (b & 0xf).toString(16)
+  "%#{ub}#{lb}"
+
+encode_chunk = (chunk) ->
+  console.log "encode chunk #{chunk}"
+  n = chunk.length
+  i = 0
+  parts = while i < n
+    fna = first_non_ascii chunk, i, n
+    if fna > i
+      sa = chunk.subarray i, fna
+      i = fna
+      String.fromCharCode sa...
+    else
+      i++
+      encode_byte chunk[i]
+  out = parts.join ''
+  console.log "out #{out}"
+  return out
+
+##=======================================================================
+
+exports.utf8_to_ui8a = (s) ->
+  s = encodeURIComponent s
+  n = s.length
+  ret = new Uint8Array s.length
+  rp = 0
+  i = 0
+  while i < n
+    c = s[i]
+    if c is '%'
+      c = parseInt s[(i+1)..(i+2)], 16
+      i += 3
+    else 
+      c = c.charCodeAt 0
+      i++
+    ret[rp++] = c
+  ret.subarray(0,rp)
+
 ##=======================================================================

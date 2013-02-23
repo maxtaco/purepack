@@ -1,9 +1,8 @@
-
-
 exports.C =
 	null                 : 0xc0
 	false                : 0xc2
 	true                 : 0xc3
+	byte_array           : 0xc4  ## purepack addition!
 	float                : 0xca
 	double               : 0xcb
 	uint8                : 0xcc

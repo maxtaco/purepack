@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer} = require './buffer'
+{Buffer,utf8_to_ui8a} = require './buffer'
 {pow2,rshift,twos_compl,U32MAX} = require './util'
 floats = require './floats'
 
@@ -63,16 +63,23 @@ exports.Packer = class Packer
   
   #-----------------------------------------
 
+  do_byte_array : (o) ->
+    (@_opts.byte_arrays and  
+      Object.prototype.toString.call(o) is '[object Uint8Array]')
+  
+  #-----------------------------------------
+
   p : (o) ->
     switch typeof o
-      when 'number'         then @p_number o
-      when 'string'         then @p_bytes o
-      when 'boolean'        then @p_boolean o
-      when 'undefined'      then @p_null()
+      when 'number'               then @p_number o
+      when 'string'               then @p_utf8_string o
+      when 'boolean'              then @p_boolean o
+      when 'undefined'            then @p_null()
       when 'object'
-        if not o?          then @p_null()
-        else if is_array o then @p_array o
-        else                    @p_obj o
+        if not o?                 then @p_null()
+        else if is_array o        then @p_array o
+        else if @do_byte_array o  then @p_byte_array o
+        else                      @p_obj o
 
   #-----------------------------------------
 
@@ -170,9 +177,15 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_bytes : (b) ->
+  p_byte_array : (b) ->
+    @p_byte C.byte_array
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
-    @_buffer.push_bytes b
+    @_buffer.push_buffer b
+
+  p_utf8_string : (b) ->
+    b = utf8_to_ui8a b
+    @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
+    @_buffer.push_buffer b
 
   #-----------------------------------------
 

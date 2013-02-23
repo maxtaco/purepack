@@ -4,6 +4,13 @@
 {pow2,twos_compl_inv,U32MAX} = require './util'
 floats = require './floats'
 
+##=======================================================================a
+
+modes = 
+  NONE : 0
+  BINARY : 1
+  START : 2
+
 ##=======================================================================
 
 exports.Unpacker = class Unpacker
@@ -19,8 +26,11 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
-  u_raw : (n) ->
-    [warning, raw] = @_buffer.consume_string n
+  u_bytes : (n, mode) ->
+    [warning, raw] = if mode is modes.BINARY 
+      @_buffer.consume_byte_array n
+    else
+      @_buffer.consume_utf8_string n
     @_w.push warning if warning?
     return raw
    
@@ -103,20 +113,24 @@ exports.Unpacker = class Unpacker
    
   #-----------------------------------------
 
-  u : () ->
+  u_inner : (last_mode) ->
+    mode = modes.NONE
     b = @_buffer.consume_byte()
     ret = if b <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
       twos_compl_inv b, 8
     else if b >= C.fix_raw_min and b <= C.fix_raw_max
       l = (b & C.fix_raw_count_mask)
-      @u_raw l
+      @u_bytes l, last_mode
     else if b >= C.fix_array_min and b <= C.fix_array_max
       l = (b & C.fix_array_count_mask)
       @u_array l
     else if b >= C.fix_map_min and b <= C.fix_map_max
       l = (b & C.fix_map_count_mask)
       @u_map l
+    else if b is C.byte_array
+      mode = modes.BINARY
+      null
     else
       switch b
         when C.null  then null
@@ -132,13 +146,21 @@ exports.Unpacker = class Unpacker
         when C.int64 then @u_int64()
         when C.double then @u_double()
         when C.float then @u_float()
-        when C.raw16 then @u_raw @u_uint16()
-        when C.raw32 then @u_raw @u_uint32()
+        when C.raw16 then @u_bytes @u_uint16(), last_mode
+        when C.raw32 then @u_bytes @u_uint32(), last_mode
         when C.array16 then @u_array @u_uint16()
         when C.array32 then @u_array @u_uint32()
         when C.map16 then @u_map @u_uint16()
         when C.map32 then @u_map @u_uint32()
         else @error "unhandled type #{b}"
+    [ mode , ret ]
+
+  #-----------------------------------------
+
+  u : () ->
+    mode = modes.START
+    while mode isnt modes.NONE
+      [ mode, ret ] = @u_inner mode
     ret
       
 ##=======================================================================
