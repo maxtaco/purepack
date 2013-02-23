@@ -418,8 +418,7 @@ encode_chunk = (chunk) ->
       i = fna
       String.fromCharCode sa...
     else
-      i++
-      encode_byte chunk[i]
+      encode_byte chunk[i++]
   out = parts.join ''
   console.log "out #{out}"
   return out
