@@ -206,6 +206,9 @@ exports.Packer = class Packer
 
 ##=======================================================================
 
+# Opts can be:
+#   - byte_arrays - encode 0xc4 byte arrays
+#   - floats      - use floats, not double in encodings...
 exports.pack = (x, enc, opts = {} ) ->
   packer = new Packer opts
   packer.p x
