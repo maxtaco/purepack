@@ -67,9 +67,23 @@ exports.Buffer = class Buffer
   
   #-----------------------------------------
   
-  push_short  : (s) -> @push_ibytes s, 1
-  push_int    : (i) -> @push_ibytes i, 3
-  
+  push_short  : (i) -> 
+    @push_byte((i >> 8) & 0xff)
+    @push_byte(i & 0xff)
+
+  # unroll the obvious loop for performance...
+  push_int    : (i) ->
+    if @_left_in_buffer() >= 4
+      dv = new DataView @_buffers[@_b]
+      dv.setUint32(@_i, i, 1)
+      @_i += 4
+      @_tot += 4
+    else
+      @push_byte((i >> 24) & 0xff)
+      @push_byte((i >> 16) & 0xff)
+      @push_byte((i >> 8) & 0xff)
+      @push_byte(i & 0xff)
+    
   #-----------------------------------------
 
   push_raw_bytes : (s) ->
@@ -126,10 +140,6 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
   
-  push_ibytes : (b, n) ->
-    @push_byte((b >> (i*8)) & 0xff) for i in [n..0]
-
-  #-----------------------------------------
   
   toString : (enc = 'base64') ->
     switch enc
