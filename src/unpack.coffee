@@ -17,8 +17,6 @@ exports.Unpacker = class Unpacker
 
   constructor : ()  ->
     @_buffer = null
-    @_e = []
-    @_w = []
     
   #-----------------------------------------
   
@@ -27,17 +25,12 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u_bytes : (n, mode) ->
-    [warning, raw] = if mode is modes.BINARY 
-      @_buffer.consume_byte_array n
-    else
-      @_buffer.consume_utf8_string n
-    @_w.push warning if warning?
-    return raw
+    if mode is modes.BINARY then @_buffer.consume_byte_array n
+    else @_buffer.consume_utf8_string n
    
   #-----------------------------------------
 
-  get_error : () -> if @_e.length then @_e else null
-  get_warning : () -> if @_w.length then @_w else null
+  get_errors : () -> @_buffer.get_errors()
    
   #-----------------------------------------
 
@@ -171,10 +164,9 @@ exports.unpack = (x, enc = 'base64') ->
   res = null
   if (unpacker.decode x, enc)
     res = unpacker.u()
-    err = unpacker.get_error()
-    warn = unpacker.get_warning()
+    err = unpacker.get_errors()
   else
     err = "Decoding type '#{enc}' failed"
-  return [err, res, warn]
+  return [err, res ]
     
 ##=======================================================================

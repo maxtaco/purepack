@@ -1,5 +1,3 @@
-
-msgpack = require 'msgpack2'
 purepack = require '../src/main'
 
 compare = (T, obj, nm) -> 
@@ -85,7 +83,7 @@ exports.unpack9 = (T,cb)->
   compare T, obj, "unpack9"
   cb()
 
-corrupt1 = (T,cb) ->
+exports.corrupt1 = (T,cb) ->
   x = new Uint8Array([135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97, 
                       120, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 165, 110, 111, 
                       116, 101, 115, 219, 0, 77, 110, 111, 116, 32, 97, 99, 116, 105, 118, 
@@ -98,12 +96,11 @@ corrupt1 = (T,cb) ->
                       12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8, 
                       171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101, 
                       110, 101, 114, 97, 116, 105, 111, 110, 1])
-  [ err, res, warn ] = purepack.unpack x, 'ui8a'
-  T.assert not err
-  T.assert res.notes.match /^t active yet/
-  T.assert res.email is 'themax@gmail.com'
-  T.assert warn? 
-  T.equal warn[0], "Corruption: asked for 5074543 bytes, but only 137 available"
+  [ err, res ] = purepack.unpack x, 'ui8a'
+  T.assert err?, "error was found"
+  T.assert (res.email is 'themax@gmail.com'), "found email"
+  T.equal err[0], "Corruption: asked for 5074543 bytes, but only 137 available"
+  T.equal err[1], "Invalid UTF-8 sequence"
   cb()
 
 exports.floats = (T,cb) ->

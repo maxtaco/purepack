@@ -37,6 +37,11 @@ exports.Buffer = class Buffer
     @_cp = 0
     @_tot = 0
     @_no_push = false
+    @_e = []
+
+  #-----------------------------------------
+
+  get_errors : () -> if @_e.length then @_e else null
 
   #-----------------------------------------
   
@@ -361,37 +366,40 @@ exports.Buffer = class Buffer
 
   consume_byte_array : (n) ->
     i = 0
-    [w,n] = @prep_byte_grab n
+    n = @prep_byte_grab n
     ret = new Uint8Array(n)
     while i < n
       chnk = @consume_chunk(n-i)
       ret.set chnk, i
       i += chnk.length
-    return [ w, ret ]
+    return ret
    
   #-----------------------------------------
 
   prep_byte_grab : (n) ->
     bl = @bytes_left()
-    w = null
     if n > bl
-      w = "Corruption: asked for #{n} bytes, but only #{bl} available"
+      @_e.push "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
-    return [w, n]
+    return n
   
   #-----------------------------------------
 
   consume_utf8_string : (n) ->
     i = 0
-    [w,n] = @prep_byte_grab n
+    n = @prep_byte_grab n
     chnksz = 0x400
     tmp = while i < n
       s = Math.min n-i, chnksz
       chnk = @consume_chunk s
       i += chnk.length
       encode_chunk chnk
-    ret = decodeURIComponent tmp.join ''
-    [w, ret]
+    try
+      ret = decodeURIComponent tmp.join ''
+    catch e
+      @_e.push "Invalid UTF-8 sequence"
+      ret = ""
+    ret
 
 ##=======================================================================
 
