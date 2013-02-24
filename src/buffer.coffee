@@ -76,7 +76,6 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   push_buffer : (input) ->
-
     bp = 0
     ep = input.length
     while bp < ep
@@ -87,12 +86,10 @@ exports.Buffer = class Buffer
       else
         slab = @_buffers[@_b]
       n = Math.min(lib, ep - bp)
-      slab.set(input.subarray(bp, n), @_i)
+      slab.set(input.subarray(bp, bp+n), @_i)
       @_i += n
       @_tot += n
       bp += n
-
-    @_push_new_buffer() if @_i is @_sz
     @
 
   #-----------------------------------------
@@ -160,7 +157,9 @@ exports.Buffer = class Buffer
       lim = if bi is @_b then @_i else @_sz       # local limit
 
       ret = if bi > @_b or li >= lim then zero_pad
-      else if not n? then @_buffers[bi][li]
+      else if not n? 
+        c = @_buffers[bi][li]
+        c
       else
         n = Math.min( lim - li, n )
         @_buffers[bi].subarray(li, (li+n))
@@ -383,7 +382,6 @@ exports.Buffer = class Buffer
   #-----------------------------------------
 
   consume_utf8_string : (n) ->
-    console.log "consuming #{n} bytes"
     i = 0
     [w,n] = @prep_byte_grab n
     chnksz = 0x400
@@ -397,9 +395,11 @@ exports.Buffer = class Buffer
 
 ##=======================================================================
 
+# Stop at the first non-ascii character, or at a %,
+# which needs to be encoded too...
 first_non_ascii = (chunk, start, end) ->
   for i in [start...end]
-    return i if chunk[i] >= 0x80
+    return i if chunk[i] >= 0x80 or chunk[i] is 0x25
   return end
 
 encode_byte = (b) ->
@@ -408,7 +408,6 @@ encode_byte = (b) ->
   "%#{ub}#{lb}"
 
 encode_chunk = (chunk) ->
-  console.log "encode chunk #{chunk}"
   n = chunk.length
   i = 0
   parts = while i < n
@@ -420,7 +419,6 @@ encode_chunk = (chunk) ->
     else
       encode_byte chunk[i++]
   out = parts.join ''
-  console.log "out #{out}"
   return out
 
 ##=======================================================================
