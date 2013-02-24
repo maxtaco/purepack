@@ -175,7 +175,7 @@ exports.Buffer = class Buffer
   ui8a_encode : () ->
     hold = @_cp
     @_cp = 0
-    [w, raw] = @consume_byte_array @_tot
+    raw = @consume_byte_array @_tot
     @_cp = hold
     raw
   
