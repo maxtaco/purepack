@@ -99,6 +99,7 @@ exports.Buffer = class Buffer
 
   #-----------------------------------------
 
+  # This code isn't being used, but ;et's keep it in for now...
   push_utf8_codepoint : (c) ->
     if c >= 0x10000
       @push_byte( 0xf0 | ((c & 0x1c0000) >>> 18))
