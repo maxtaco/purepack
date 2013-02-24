@@ -12,12 +12,14 @@ class CharMap
 
 ##=======================================================================
 
+NodeBuffer = Buffer
+
 #
 # This buffer is made up of a chain of Uint8Arrays, each of fixed size.
 # This is a good performance boost over a standard array, but of course
 # we can't push() onto it...
 # 
-exports.Buffer = class Buffer
+exports.Buffer = class MyBuffer
 
   B16 : new CharMap "0123456789abcdef"
   B32 : new CharMap "abcdefghijkmnpqrstuvwxyz23456789"
@@ -67,23 +69,18 @@ exports.Buffer = class Buffer
   
   #-----------------------------------------
   
+  # unroll the obvious loop for performance...
   push_short  : (i) -> 
     @push_byte((i >> 8) & 0xff)
     @push_byte(i & 0xff)
 
   # unroll the obvious loop for performance...
   push_int    : (i) ->
-    if @_left_in_buffer() >= 4
-      dv = new DataView @_buffers[@_b]
-      dv.setUint32(@_i, i, 1)
-      @_i += 4
-      @_tot += 4
-    else
-      @push_byte((i >> 24) & 0xff)
-      @push_byte((i >> 16) & 0xff)
-      @push_byte((i >> 8) & 0xff)
-      @push_byte(i & 0xff)
-    
+    @push_byte((i >> 24) & 0xff)
+    @push_byte((i >> 16) & 0xff)
+    @push_byte((i >> 8) & 0xff)
+    @push_byte(i & 0xff)
+  
   #-----------------------------------------
 
   push_raw_bytes : (s) ->
@@ -260,13 +257,13 @@ exports.Buffer = class Buffer
 
   @decode : (s, enc) ->
     switch enc
-      when 'binary'  then (new Buffer).binary_decode s
-      when 'base64'  then (new Buffer).base64_decode s
-      when 'base64a' then (new Buffer).base64a_decode s
-      when 'base64x' then (new Buffer).base64x_decode s
-      when 'base32'  then (new Buffer).base32_decode s
-      when 'hex'     then (new Buffer).base16_decode s
-      when 'ui8a'    then (new Buffer).ui8a_decode s
+      when 'binary'  then (new MyBuffer).binary_decode s
+      when 'base64'  then (new MyBuffer).base64_decode s
+      when 'base64a' then (new MyBuffer).base64a_decode s
+      when 'base64x' then (new MyBuffer).base64x_decode s
+      when 'base32'  then (new MyBuffer).base32_decode s
+      when 'hex'     then (new MyBuffer).base16_decode s
+      when 'ui8a'    then (new MyBuffer).ui8a_decode s
      
   #-----------------------------------------
 
@@ -447,6 +444,14 @@ encode_chunk = (chunk) ->
 # also write the encoder by hand, but if we did, we couldn't use 
 # String.fromCharCode, since that doesn't work over codepoints with values 
 # over 0x10000.
+#
+#  In node, we could do something like this:
+#
+#      new Uint8Array( new NodeBuffer s, 'utf8' )
+#
+# While way faster than way we're currently doing, it's still much slower than
+# just manipulating buffers directly.
+#
 exports.utf8_to_ui8a = (s) ->
   s = encodeURIComponent s
   n = s.length
@@ -477,3 +482,4 @@ exports.ui8a_to_binary = (b) ->
     i += n
   parts.join ''
 
+##=======================================================================

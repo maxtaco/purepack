@@ -54,7 +54,7 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  constructor: (@_opts) ->
+  constructor: (@_opts = {}) ->
     @_buffer = new Buffer()
 
   #-----------------------------------------
