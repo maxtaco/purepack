@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer,utf8_to_ui8a} = require './buffer'
+{Buffer,utf8_to_ui8a,ui8a_to_binary} = require './buffer'
 {pow2,rshift,twos_compl,U32MAX} = require './util'
 floats = require './floats'
 
@@ -8,6 +8,7 @@ floats = require './floats'
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
+is_byte_array = (x) -> Object.prototype.toString.call(x) is '[object Uint8Array]'
 
 ##=======================================================================
 #
@@ -63,23 +64,17 @@ exports.Packer = class Packer
   
   #-----------------------------------------
 
-  do_byte_array : (o) ->
-    (@_opts.byte_arrays and  
-      Object.prototype.toString.call(o) is '[object Uint8Array]')
-  
-  #-----------------------------------------
-
   p : (o) ->
     switch typeof o
-      when 'number'               then @p_number o
-      when 'string'               then @p_utf8_string o
-      when 'boolean'              then @p_boolean o
-      when 'undefined'            then @p_null()
+      when 'number'              then @p_number o
+      when 'string'              then @p_utf8_string o
+      when 'boolean'             then @p_boolean o
+      when 'undefined'           then @p_null()
       when 'object'
-        if not o?                 then @p_null()
-        else if is_array o        then @p_array o
-        else if @do_byte_array o  then @p_byte_array o
-        else                      @p_obj o
+        if not o?                then @p_null()
+        else if is_array o       then @p_array o
+        else if is_byte_array o  then @p_byte_array o
+        else                     @p_obj o
 
   #-----------------------------------------
 
@@ -178,11 +173,19 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_byte_array : (b) ->
-    @p_byte C.byte_array
+    if @_opts.byte_arrays
+      @p_byte C.byte_array
+    else
+      b = ui8a_to_binary b    
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b
 
   p_utf8_string : (b) ->
+    # Given a string, the first thing we do is convert it to a UTF-8 sequence
+    # of raw bytes in a byte array.  The character '\x8a' will be converted
+    # to "\xc2\x8a".  We then encoding this string.  We need to do this conversion
+    # outside the buffer class since we need to know the string length to encode
+    # up here.
     b = utf8_to_ui8a b
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b

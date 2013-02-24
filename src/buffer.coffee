@@ -29,8 +29,8 @@ exports.Buffer = class Buffer
   
   constructor : () ->
     @_buffers = []
-    @_sz = 0x400
-    @_logsz = 10
+    @_sz = 0x1000
+    @_logsz = 12
     @_push_new_buffer()
     @_i = 0
     @_b = 0
@@ -432,6 +432,11 @@ encode_chunk = (chunk) ->
 
 ##=======================================================================
 
+# Covert a javascript UTF-8 string to a Uint8Array of the character-by-character
+# encodings.  I wish there were a fast, clean way to do this.  We could
+# also write the encoder by hand, but if we did, we couldn't use 
+# String.fromCharCode, since that doesn't work over codepoints with values 
+# over 0x10000.
 exports.utf8_to_ui8a = (s) ->
   s = encodeURIComponent s
   n = s.length
@@ -450,3 +455,15 @@ exports.utf8_to_ui8a = (s) ->
   ret.subarray(0,rp)
 
 ##=======================================================================
+
+exports.ui8a_to_binary = (b) ->
+  chnksz = 0x100
+  n = b.length
+  i = 0
+  parts = []
+  while i < n
+    s = Math.min(n-i,chnksz)  
+    parts.push String.fromCharCode b.subarray(i,i+s)...
+    i += n
+  parts.join ''
+
