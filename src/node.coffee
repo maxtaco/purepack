@@ -9,16 +9,13 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
 
   constructor : () ->
     super()
+    @_frozen_buf = null
     @_buffers = []
     @_limits = []
-    @_cumsum = [ 0 ]
     @_sz = 0x1000
     @_logsz = 12
     @_i = 0
-    @_no_push = false
     @_tot = 0
-    @_push_new_buffer()
-    @_last_bi = null
     @_cp = 0
 
   #-----------------------------------------
@@ -28,16 +25,20 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   #-----------------------------------------
 
   _nb  : () -> @_buffers.length     # num buffers
-  _ab  : () -> @_buffers[@_nb()]    # active buffer
-  _lib : () -> @_sz - @_i           # left in buffer
+  _ab  : () -> @_buffers[@_nb()-1]  # active buffer
+  _lib : () -> 0                    # we'll update this later..
+
+  #-----------------------------------------
+
+  _finish_buffer : () ->
+    @_limits.push @_i
+    @_i = 0
 
   #-----------------------------------------
 
   _push_buffer : (b) ->
-    nb = @_nb()
-    @_limits[nb] = @_i
-    @_cumsum[nb] = @_cumsum[nb-1] + @_i if nb > 0
-    @_i = 0
+    @_finish_buffer() if @_buffers.length
+    @left_in_buffer = () -> @_sz - @_i
     @_buffers.push b
     b
 
@@ -50,7 +51,7 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   push_uint8 : (b) ->
     throw new Error "Cannot push anymore into this buffer" if @_no_push
     buf = if @_lib() is 0 then @_push_new_buffer() else @_ab()
-    buf[@_i++] = @_b
+    buf[@_i++] = b
     @_tot++
 
   push_int8 : (b) -> @push_uint8 b
@@ -84,7 +85,7 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
     @_tot += n
 
   push_raw_bytes : (s) ->
-    @push_buffer new Buffer s, 'binary'
+    @push_buffer( new Buffer s, 'binary' )
 
   push_buffer : (b) ->
     if b.length > Math.min(0x400, @_sz)
@@ -92,51 +93,47 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
       @_push_new_buffer()
     else
       n = Math.min b.length, @_lib()
-      b.copy @_ab(), @_i, 0, n
-      @_i += n
-      @_tot += n
+      if n > 0
+        b.copy @_ab(), @_i, 0, n
+        @_i += n
+        @_tot += n
       if n < b.length
         @_push_new_buffer()
         b.copy @_ab(), @_i, n, b.length
         diff = b.length - n
         @_i += diff
         @_tot += diff
+    @
 
   #-----------------------------------------
 
-  # map the given offset to a sub-buffer; optimization: we're usually
-  # going to pick up where we left off, so assume that going forward.
-  # hence the @_last_bi variable
-  _get_sub_buffer : (index) ->
-    if n >= @_tot then return null
-
-    bi = if @_last_bi? and index >= @_cumsum[@_last_bi] then @_last_bi
-    else 0
-
-    nb = @_nb()
-    while bi < nb
-      if index < @_cumsum[bi+1] then break
-      else bi++
-    @_last_bi = bi
-
-    [ @_buffers[bi],                              # the buffer
-      (offset - @_cumsum[bi]),                    # the offset in that buffer
-      (if bi is nb then @_i else @_limits[bi]) ]  # last offset in that buffer
+  _freeze : () ->
+    if not @_frozen_buf?
+      @_finish_buffer()
+      lst = for b,i in @_buffers
+        if (l = @_limits[i]) is b.length then b
+        else b[0...l]
+      @_buffers = []
+      @_frozen_buf = Buffer.concat lst, @_tot
+    @_frozen_buf
 
   #-----------------------------------------
 
-  _zero_pad : (n) -> if n? then ( 0 for j in [0...n] ) else 0
+  _prepare_encoding : () -> @_freeze()
 
-  # Get n characters starting at index i.
-  # If n is null, then assume just 1 character and return
-  # as a scalar.  Otherwise, return as a list of chars.
-  # Might return fewer than n bytes!
-  _get : (i, n = null) ->
-    if i >= @_tot then @_zero_pad n
-    else
-      [ buf, i, lim ] = @_get_sub_buffer i
-      if n? then buf[i...(Math.min(lim,i+n))]
-      else       buf[i]
+  #-----------------------------------------
+
+  base64_encode : () -> @_freeze().toString 'base64'
+  base16_encode : () -> @_freeze().toString 'hex'
+  binary_encode : () -> @_freeze().toString 'binary'
+  ui8a_encode   : () -> new Uint8Array @_freeze()
+
+  base64_decode : (d) -> @_frozen_buf = new Buffer d, 'base64'
+  base16_decode : (d) -> @_frozen_buf = new Buffer d, 'hex'
+ 
+  #-----------------------------------------
+
+  _get : (i) -> @_frozen_buf[i]
 
   #-----------------------------------------
 
@@ -151,4 +148,40 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   #-----------------------------------------
 
   read_uint8 : () -> @_get @_cp++
+
+  read_uint16 : () ->
+    ret = @_frozen_buf.readUint16BE @_cp
+    @_cp += 2
+    return ret
+  read_uint32 : () ->
+    ret = @_frozen_buf.readUint32BE @_cp
+    @_cp += 4
+    return ret
+  read_int16 : () ->
+    ret = @_frozen_buf.readInt16BE @_cp
+    @_cp += 2
+    return ret
+  read_int32 : () ->
+    ret = @_frozen_buf.readInt32BE @_cp
+    @_cp += 4
+    return ret
+  read_float64 : () ->
+    ret = @_frozen_buf.readDoubleBE @_cp
+    @_cp += 8
+    return ret
+  read_float32 : () ->
+    ret = @_frozen_buf.readFloatBE @_cp
+    @_cp += 4
+    return ret
+  read_byte_array : (n) ->
+    e = @_cp + n
+    ret = @_frozen_buf[@_cp...e]
+    @_cp = e
+    return ret
+  read_utf8_string : (n) ->
+    @read_byte_array(n).toString 'utf8'
+
+  @utf8_to_ui8a   : (s) -> new Buffer s, 'utf8'
+  @ui8a_to_binary : (s) -> s.toString 'binary'
+
 

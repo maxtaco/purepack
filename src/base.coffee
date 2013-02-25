@@ -34,8 +34,11 @@ exports.Buffer = class BaseBuffer
   get_errors : () -> if @_e.length then @_e else null
 
   #-----------------------------------------
+
+  _prepare_encoding : () ->
   
   toString : (enc = 'base64') ->
+    @_prepare_encoding()
     switch enc
       when 'base64'  then @base64_encode()
       when 'base64a' then @base64a_encode()
