@@ -8,12 +8,15 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   #-----------------------------------------
 
   constructor : () ->
-    console.log "hello! just making sure!"
     super()
     @_frozen_buf = null
-    @_buffers = []
+    @_sub_buffers = []
     @_limits = []
+
+    # _small_buf_sz must be less than _sz
     @_sz = 0x1000
+    @_small_buf_sz = 0x200
+
     @_logsz = 12
     @_i = 0
     @_tot = 0
@@ -25,33 +28,34 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   #-----------------------------------------
 
-  _nb  : () -> @_buffers.length     # num buffers
-  _ab  : () -> @_buffers[@_nb()-1]  # active buffer
-  _lib : () -> 0                    # we'll update this later..
+  _nb  : () -> @_sub_buffers.length     # num buffers
+  _ab  : () -> @_sub_buffers[@_nb()-1]  # active buffer
+  _lib : () -> 0                        # we'll update this later..
 
   #-----------------------------------------
 
-  _finish_buffer : () ->
+  _finish_sub_buffer : () ->
     @_limits.push @_i
     @_i = 0
 
   #-----------------------------------------
 
-  _push_buffer : (b) ->
-    @_finish_buffer() if @_buffers.length
-    @_lib = () -> @_sz - @_i
-    @_buffers.push b
+  _push_sub_buffer : (b) ->
+    @_finish_sub_buffer() if @_sub_buffers.length
+    @_lib = () -> b.length - @_i
+    @_sub_buffers.push b
     b
 
   #-----------------------------------------
 
-  _push_new_buffer : () -> @_push_buffer new Buffer @_sz
+  _make_room : () -> @_push_sub_buffer new Buffer @_sz
+  _make_room_for_n_bytes : (n) -> @_make_room() if @_lib() < n
 
   #-----------------------------------------
   
   push_uint8 : (b) ->
     throw new Error "Cannot push anymore into this buffer" if @_no_push
-    buf = if @_lib() is 0 then @_push_new_buffer() else @_ab()
+    buf = if @_lib() is 0 then @_make_room() else @_ab()
     buf[@_i++] = b
     @_tot++
 
@@ -59,28 +63,28 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   push_uint16 : (s) -> 
     n = 2
-    if @_lib() < n then @_push_new_buffer()
+    @_make_room_for_n_bytes n
     @_ab().writeUInt16BE s, @_i
     @_i += n
     @_tot += n
 
   push_uint32 : (w) ->
     n = 4
-    if @_lib() < n then @_push_new_buffer()
+    @_make_room_for_n_bytes n
     @_ab().writeUInt32BE w, @_i
     @_i += n
     @_tot += n
 
   push_int16 : (s) -> 
     n = 2
-    if @_lib() < n then @_push_new_buffer()
+    @_make_room_for_n_bytes n
     @_ab().writeInt16BE s, @_i
     @_i += n
     @_tot += n
 
   push_int32 : (w) ->
     n = 4
-    if @_lib() < n then @_push_new_buffer()
+    @_make_room_for_n_bytes n
     @_ab().writeInt32BE w, @_i
     @_i += n
     @_tot += n
@@ -89,22 +93,19 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @push_buffer( new Buffer s, 'binary' )
 
   push_buffer : (b) ->
-    console.log "push buffer...."
-    console.log b
-    if b.length > Math.min(0x400, @_sz)
-      @_push_buffer b
+    if b.length > Math.min(@_small_buf_sz, @_sz)
+      @_push_sub_buffer b
+      @_i = b.length
       @_tot += b.length
-      @_push_new_buffer()
+      @_make_room()
     else
       n = Math.min b.length, @_lib()
       if n > 0
-        console.log "AAA"
         b.copy @_ab(), @_i, 0, n
         @_i += n
         @_tot += n
       if n < b.length
-        console.log "BBBBB"
-        @_push_new_buffer()
+        @_make_room()
         b.copy @_ab(), @_i, n, b.length
         diff = b.length - n
         @_i += diff
@@ -115,11 +116,14 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   _freeze : () ->
     if not @_frozen_buf?
-      @_finish_buffer()
-      lst = for b,i in @_buffers
-        if (l = @_limits[i]) is b.length then b
-        else b[0...l]
-      @_buffers = []
+      @_finish_sub_buffer()
+      lst = []
+      for b,i in @_sub_buffers
+        if (l = @_limits[i]) is b.length 
+          lst.push b
+        else if l > 0
+          lst.push b[0...l]
+      @_sub_buffers = []
       @_frozen_buf = Buffer.concat lst, @_tot
     @_frozen_buf
 
@@ -128,7 +132,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   _freeze_to : (b) ->
     @_frozen_buf = b
     @_tot = b.length
-    @_buffers = []
+    @_sub_buffers = []
     @
 
   #-----------------------------------------
@@ -144,20 +148,12 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   base64_decode : (d) -> @_freeze_to( new Buffer d, 'base64' )
   base16_decode : (d) -> @_freeze_to( new Buffer d, 'hex'    )
+  binary_decode : (d) -> @_freeze_to( new Buffer d, 'binary' )
+  ui8a_decode   : (d) -> @_freeze_to( new Buffer d )
  
   #-----------------------------------------
 
   _get : (i) -> if i < @_tot then @_frozen_buf[i] else 0
-
-  #-----------------------------------------
-
-  # same as in Browser's buffer
-  ui8a_decode : (v) ->
-    @_buffers = [ new Buffer v ]
-    @_logsz = 0
-    @_tot = @_sz = @_i = v.length
-    @_no_push = true
-    @
 
   #-----------------------------------------
 
@@ -188,8 +184,6 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @_cp += 4
     return ret
   read_byte_array : (n) ->
-    console.log @_frozen_buf
-    console.log "#{n} #{@_cp} #{@_tot}"
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]
     @_cp = e
@@ -202,9 +196,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   @to_byte_array : (b) ->
     if Buffer.isBuffer b then b
-    else if base.is_uint8_array b 
-      console.log "Ok, we got one! #{b}"
-      new Buffer b
+    else if base.is_uint8_array b then new Buffer b
     else null
 
 

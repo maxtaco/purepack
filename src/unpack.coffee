@@ -97,7 +97,6 @@ exports.Unpacker = class Unpacker
       twos_compl_inv b, 8
     else if b >= C.fix_raw_min and b <= C.fix_raw_max
       l = (b & C.fix_raw_count_mask)
-      console.log "got len #{l}"
       @u_bytes l, last_mode
     else if b >= C.fix_array_min and b <= C.fix_array_max
       l = (b & C.fix_array_count_mask)
