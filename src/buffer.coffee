@@ -438,13 +438,15 @@ exports.Buffer = class MyBuffer
       s = Math.min n-i, chnksz
       chnk = @read_chunk s
       i += chnk.length
-      encode_chunk chnk
+      uri_encode_chunk chnk
     try
       ret = decodeURIComponent tmp.join ''
     catch e
       @_e.push "Invalid UTF-8 sequence"
       ret = ""
     ret
+
+  #-----------------------------------------
 
   # Covert a javascript UTF-8 string to a Uint8Array of the character-by-character
   # encodings.  I wish there were a fast, clean way to do this.  We could
@@ -491,6 +493,11 @@ exports.Buffer = class MyBuffer
 
 ##=======================================================================
 
+#
+# Hacks for minimally URI-encoding a string, so we can URI-decode it right
+# away.  This is horrible but I think it's the fastest way to convert binary
+# to a UTF-8 string on the browser...
+#
 # Stop at the first non-ascii character, or at a %,
 # which needs to be encoded too...
 first_non_ascii = (chunk, start, end) ->
@@ -503,7 +510,7 @@ encode_byte = (b) ->
   lb = (b & 0xf).toString(16)
   "%#{ub}#{lb}"
 
-encode_chunk = (chunk) ->
+uri_encode_chunk = (chunk) ->
   n = chunk.length
   i = 0
   parts = while i < n
@@ -516,3 +523,5 @@ encode_chunk = (chunk) ->
       encode_byte chunk[i++]
   out = parts.join ''
   return out
+
+##=======================================================================
