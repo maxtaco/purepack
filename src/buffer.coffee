@@ -397,12 +397,26 @@ exports.Buffer = class MyBuffer
   # read exactly n bytes from the buffer
   read_byte_array : (n) ->
     i = 0
+
+    ret = null
     n = @prep_byte_grab n
-    ret = new Uint8Array(n)
-    while i < n
-      chnk = @read_chunk(n-i)
-      ret.set chnk, i
-      i += chnk.length
+
+    # Simplify the (hopefully) common case which is that
+    # _read_chunk() pulled us exactly as much data as we 
+    # needed....
+    chnk = @read_chunk n
+    if chnk.length is n
+      ret = chnk
+    else
+      # This is the disappointing case, in which we have
+      # to build this array up from multiple arrays.
+      ret = new Uint8Array(n)
+      ret.set chnk, 0
+      i = chnk.length
+      while i < n
+        chnk = @read_chunk(n-i)
+        ret.set chnk, i
+        i += chnk.length
     return ret
    
   #-----------------------------------------
