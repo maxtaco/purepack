@@ -89,16 +89,21 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @push_buffer( new Buffer s, 'binary' )
 
   push_buffer : (b) ->
+    console.log "push buffer...."
+    console.log b
     if b.length > Math.min(0x400, @_sz)
       @_push_buffer b
+      @_tot += b.length
       @_push_new_buffer()
     else
       n = Math.min b.length, @_lib()
       if n > 0
+        console.log "AAA"
         b.copy @_ab(), @_i, 0, n
         @_i += n
         @_tot += n
       if n < b.length
+        console.log "BBBBB"
         @_push_new_buffer()
         b.copy @_ab(), @_i, n, b.length
         diff = b.length - n
@@ -193,11 +198,13 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @read_byte_array(n).toString 'utf8'
 
   @utf8_to_ui8a   : (s) -> new Buffer s, 'utf8'
-  @ui8a_to_binary : (s) -> s.toString 'binary'
+  @ui8a_to_binary : (s) -> s
 
   @to_byte_array : (b) ->
     if Buffer.isBuffer b then b
-    else if base.is_uint8_array b then new Buffer b
+    else if base.is_uint8_array b 
+      console.log "Ok, we got one! #{b}"
+      new Buffer b
     else null
 
 
