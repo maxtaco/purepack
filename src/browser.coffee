@@ -1,6 +1,6 @@
 
 {pow2,rshift,twos_compl_inv,twos_compl} = require './util'
-BaseBuffer = require('./base').Buffer
+base = require('./base')
 
 ##=======================================================================
 
@@ -9,7 +9,7 @@ BaseBuffer = require('./base').Buffer
 # This is a good performance boost over a standard array, but of course
 # we can't push() onto it...
 # 
-exports.Buffer = class BrowserBuffer extends BaseBuffer
+exports.Buffer = class BrowserBuffer extends base.Buffer
 
   #-----------------------------------------
   
@@ -41,7 +41,7 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
 
   #-----------------------------------------
 
-  @decode : (s, enc) -> BaseBuffer._decode BrowserBuffer, s, enc
+  @decode : (s, enc) -> base.Buffer._decode BrowserBuffer, s, enc
   
   #-----------------------------------------
    
@@ -290,6 +290,12 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
       i += n
     parts.join ''
 
+  #-----------------------------------------
+  
+  @to_byte_array : (b) ->
+    if base.is_uint8_array b then new Buffer b
+    else null
+
 ##=======================================================================
 
 #
@@ -324,3 +330,5 @@ uri_encode_chunk = (chunk) ->
   return out
 
 ##=======================================================================
+
+

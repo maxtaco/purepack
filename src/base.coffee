@@ -229,3 +229,7 @@ exports.Buffer = class BaseBuffer
 
 ##=======================================================================
 
+exports.is_uint8_array = (x) -> 
+  Object.prototype.toString.call(x) is '[object Uint8Array]'
+  
+##=======================================================================

@@ -1,13 +1,12 @@
 
 {C} = require './const'
-{Buffer} = require './browser'
-{pow2,rshift,twos_compl,U32MAX} = require './util'
+{Buffer} = require './buffer'
+{U32MAX} = require './util'
 
 ##=======================================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f
-is_byte_array = (x) -> Object.prototype.toString.call(x) is '[object Uint8Array]'
 
 ##=======================================================================
 #
@@ -65,15 +64,15 @@ exports.Packer = class Packer
 
   p : (o) ->
     switch typeof o
-      when 'number'              then @p_number o
-      when 'string'              then @p_utf8_string o
-      when 'boolean'             then @p_boolean o
-      when 'undefined'           then @p_null()
+      when 'number'                           then @p_number o
+      when 'string'                           then @p_utf8_string o
+      when 'boolean'                          then @p_boolean o
+      when 'undefined'                        then @p_null()
       when 'object'
-        if not o?                then @p_null()
-        else if is_array o       then @p_array o
-        else if is_byte_array o  then @p_byte_array o
-        else                     @p_obj o
+        if not o?                             then @p_null()
+        else if is_array o                    then @p_array o
+        else if (ba = Buffer.to_byte_array o) then @p_byte_array ba
+        else                                       @p_obj o
 
   #-----------------------------------------
 

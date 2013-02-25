@@ -1,13 +1,14 @@
 
-BaseBuffer = require('./base').Buffer
+base = require('./base')
 
 ##=======================================================================
 
-exports.Buffer = class NodeBuffer extends BaseBuffer
+exports.Buffer = class NodeBuffer extends base.Buffer
 
   #-----------------------------------------
 
   constructor : () ->
+    console.log "hello! just making sure!"
     super()
     @_frozen_buf = null
     @_buffers = []
@@ -20,7 +21,7 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
 
   #-----------------------------------------
 
-  @decode = (s, enc) -> BaseBuffer._decode NodeBuffer, s, enc
+  @decode = (s, enc) -> base.Buffer._decode NodeBuffer, s, enc
 
   #-----------------------------------------
 
@@ -59,14 +60,14 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   push_uint16 : (s) -> 
     n = 2
     if @_lib() < n then @_push_new_buffer()
-    @_ab().writeUint16BE s, @_i
+    @_ab().writeUInt16BE s, @_i
     @_i += n
     @_tot += n
 
-  push_uint32 : (i) ->
+  push_uint32 : (w) ->
     n = 4
     if @_lib() < n then @_push_new_buffer()
-    @_ab().writeUint32BE s, @_i
+    @_ab().writeUInt32BE w, @_i
     @_i += n
     @_tot += n
 
@@ -77,10 +78,10 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
     @_i += n
     @_tot += n
 
-  push_int32 : (i) ->
+  push_int32 : (w) ->
     n = 4
     if @_lib() < n then @_push_new_buffer()
-    @_ab().writeInt32BE s, @_i
+    @_ab().writeInt32BE w, @_i
     @_i += n
     @_tot += n
 
@@ -158,11 +159,11 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   read_uint8 : () -> @_get @_cp++
 
   read_uint16 : () ->
-    ret = @_frozen_buf.readUint16BE @_cp
+    ret = @_frozen_buf.readUInt16BE @_cp
     @_cp += 2
     return ret
   read_uint32 : () ->
-    ret = @_frozen_buf.readUint32BE @_cp
+    ret = @_frozen_buf.readUInt32BE @_cp
     @_cp += 4
     return ret
   read_int16 : () ->
@@ -182,6 +183,8 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
     @_cp += 4
     return ret
   read_byte_array : (n) ->
+    console.log @_frozen_buf
+    console.log "#{n} #{@_cp} #{@_tot}"
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]
     @_cp = e
@@ -191,5 +194,10 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
 
   @utf8_to_ui8a   : (s) -> new Buffer s, 'utf8'
   @ui8a_to_binary : (s) -> s.toString 'binary'
+
+  @to_byte_array : (b) ->
+    if Buffer.isBuffer b then b
+    else if base.is_uint8_array b then new Buffer b
+    else null
 
 
