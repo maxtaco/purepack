@@ -142,7 +142,7 @@ exports.Buffer = class BaseBuffer
   #-----------------------------------------
   
   binary_decode : (b) ->
-    (@push_byte b.charCodeAt i for i in [0...b.length])
+    (@push_uint8 b.charCodeAt i for i in [0...b.length])
     @
     
   #-----------------------------------------
@@ -154,7 +154,7 @@ exports.Buffer = class BaseBuffer
       for c,i in data
         return null if not (v = @B16.rev[c])?
         if i % 2 is 0 then last = v
-        else @push_byte ((last << 4) | v)
+        else @push_uint8 ((last << 4) | v)
       @
      
   #-----------------------------------------
@@ -169,7 +169,7 @@ exports.Buffer = class BaseBuffer
         npad++ if c is '='
         sum = ((sum << 6) | v)
         if i % 4 is 3
-          @push_byte((sum >> i*8) & 0xff) for i in [2..npad]
+          @push_uint8((sum >> i*8) & 0xff) for i in [2..npad]
           sum = 0
       @
       
@@ -197,7 +197,7 @@ exports.Buffer = class BaseBuffer
         
         # Again, we don't use '>>' but instead 'rshift', which
         # can handle numbers above 2^32.
-        @push_byte(rshift(sum,j*8) & 0xff) for j in [4..0]
+        @push_uint8(rshift(sum,j*8) & 0xff) for j in [4..0]
 
         # clear out the sum for the next time through the loop
         sum = 0
@@ -214,7 +214,7 @@ exports.Buffer = class BaseBuffer
 
       # As above, we shift bytes on, starting from the left and
       # marching rightward.  But we stop early.
-      @push_byte(rshift(sum,i*8) & 0xff) for i in [4...(4-nmb)]
+      @push_uint8(rshift(sum,i*8) & 0xff) for i in [4...(4-nmb)]
 
     @ # success at last
 

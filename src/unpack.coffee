@@ -56,8 +56,8 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
-  u_double : () -> @_buffer.read_double()
-  u_float  : () -> @_buffer.read_float()
+  u_double : () -> @_buffer.read_float64()
+  u_float  : () -> @_buffer.read_float32()
     
   #-----------------------------------------
 

@@ -2,7 +2,6 @@
 {C} = require './const'
 {Buffer} = require './browser'
 {pow2,rshift,twos_compl,U32MAX} = require './util'
-floats = require './floats'
 
 ##=======================================================================
 
@@ -86,21 +85,21 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_pack_double : (d) ->
-    cnv = floats.Converter.make @_buffer
-    if not cnv?
-      @p_number Math.floor d
-    else if @_opts.floats?
-      @p_byte C.float
-      cnv.pack_float32 d
+    if @_opts.floats?
+      @p_uint8 C.float
+      @_buffer.push_float32 d
     else
-      @p_byte C.double
-      cnv.pack_float64 d
+      @p_uint8 C.double
+      @_buffer.push_float64 d
    
   #-----------------------------------------
 
-  p_byte : (b) -> @_buffer.push_byte twos_compl b, 8
-  p_short: (s) -> @_buffer.push_short twos_compl s, 16
-  p_int  : (i) -> @_buffer.push_int twos_compl i, 32
+  p_uint8  : (b) -> @_buffer.push_uint8  b
+  p_uint16 : (s) -> @_buffer.push_uint16 s
+  p_uint32 : (w) -> @_buffer.push_uint32 w
+  p_int8   : (b) -> @_buffer.push_int8  b
+  p_int16  : (s) -> @_buffer.push_int16 s
+  p_int32  : (w) -> @_buffer.push_int32 w
 
   #-----------------------------------------
 
@@ -112,13 +111,13 @@ exports.Packer = class Packer
   p_neg_int64 : (i) ->
     abs_i = 0 - i
     [a,b] = u64max_minus_i abs_i
-    @p_int a
-    @p_int b
+    @p_int32 a
+    @p_int32 b
    
   #-----------------------------------------
 
-  p_boolean : (b) -> @p_byte if b then C.true else C.false
-  p_null :    ()  -> @p_byte C.null
+  p_boolean : (b) -> @p_uint8 if b then C.true else C.false
+  p_null :    ()  -> @p_uint8 C.null
    
   #-----------------------------------------
 
@@ -138,43 +137,43 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_positive_int : (i) ->
-    if i <= 0x7f then @p_byte i 
+    if i <= 0x7f then @p_uint8 i 
     else if i <= 0xff
-      @p_byte C.uint8
-      @p_byte i
+      @p_uint8 C.uint8
+      @p_uint8 i
     else if i <= 0xffff
-      @p_byte C.uint16
-      @p_short i
+      @p_uint8 C.uint16
+      @p_uint16 i
     else if i < U32MAX
-      @p_byte C.uint32
-      @p_int i
+      @p_uint8 C.uint32
+      @p_uint32 i
     else
-      @p_byte C.uint64
-      @p_int Math.floor(i / U32MAX)
-      @p_int (i & (U32MAX - 1))
+      @p_uint8 C.uint64
+      @p_uint32 Math.floor(i / U32MAX)
+      @p_uint32 (i & (U32MAX - 1))
 
   #-----------------------------------------
 
   p_negative_int : (i) ->
-    if i >= -32 then @p_byte i
+    if i >= -32 then @p_int8 i
     else if i >= -128
-      @p_byte C.int8
-      @p_byte i
+      @p_uint8 C.int8
+      @p_int8 i
     else if i >= -32768
-      @p_byte C.int16
-      @p_short i
+      @p_uint8 C.int16
+      @p_int16 i
     else if i >= -2147483648
-      @p_byte C.int32
-      @p_int i
+      @p_uint8 C.int32
+      @p_int32 i
     else
-      @p_byte C.int64
+      @p_uint8 C.int64
       @p_neg_int64 i
 
   #-----------------------------------------
 
   p_byte_array : (b) ->
     if @_opts.byte_arrays
-      @p_byte C.byte_array
+      @p_uint8 C.byte_array
     else
       b = Buffer.ui8a_to_binary b    
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
@@ -194,13 +193,13 @@ exports.Packer = class Packer
 
   p_len : (l, smin, smax, m, b) ->
     if l <= (smax - smin)
-      @p_byte (l|smin)
+      @p_uint8 (l|smin)
     else if l <= 0xffff
-      @p_byte m
-      @p_short l
+      @p_uint8 m
+      @p_uint16 l
     else
-      @p_byte b
-      @p_int l
+      @p_uint8 b
+      @p_uint32 l
 
   #-----------------------------------------
 

@@ -1,5 +1,5 @@
 
-{pow2,rshift,twos_compl_inv} = require './util'
+{pow2,rshift,twos_compl_inv,twos_compl} = require './util'
 BaseBuffer = require('./base').Buffer
 
 ##=======================================================================
@@ -45,7 +45,7 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
   
   #-----------------------------------------
    
-  push_byte   : (b) ->
+  push_uint8 : (b) ->
     throw new Error "Cannot push anymore into this buffer" if @_no_push
     buf = @_buffers[@_b]
     (buf = @_push_new_buffer()) if @_i is @_sz
@@ -53,18 +53,41 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
     @_tot++
   
   #-----------------------------------------
+
+  push_int8 : (b) -> @push_uint8 b
+
+  #-----------------------------------------
+
+  push_int16 : (i) -> @push_uint16 twos_compl i, 16
+  push_int32 : (i) -> @push_uint32 twos_compl i, 32
+
+  #-----------------------------------------
+
+  push_float32 : (val) -> 
+    tmp = new Uint8Array 4
+    dv = new DataView tmp
+    dv.setFloat32 0, val, false
+    @push_buffer tmp
+
+  push_float64 : (val) ->
+    tmp = new Uint8Array 8
+    dv = new DataView tmp
+    dv.setFloat64 0, val, false
+    @push_buffer tmp
+
+  #-----------------------------------------
   
   # unroll the obvious loop for performance...
-  push_short  : (i) -> 
-    @push_byte((i >> 8) & 0xff)
-    @push_byte(i & 0xff)
+  push_uint16 : (i) -> 
+    @push_uint8((i >> 8) & 0xff)
+    @push_uint8(i & 0xff)
 
   # unroll the obvious loop for performance...
-  push_int    : (i) ->
-    @push_byte((i >> 24) & 0xff)
-    @push_byte((i >> 16) & 0xff)
-    @push_byte((i >> 8) & 0xff)
-    @push_byte(i & 0xff)
+  push_uint32 : (i) ->
+    @push_uint8((i >> 24) & 0xff)
+    @push_uint8((i >> 16) & 0xff)
+    @push_uint8((i >> 8) & 0xff)
+    @push_uint8(i & 0xff)
   
   #-----------------------------------------
 
@@ -161,15 +184,17 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
 
   #-----------------------------------------
 
-  read_double : () -> @_read_float 8
-  read_float  : () -> @_read_float 4
+  read_float64 : () -> 
+    a = @read_byte_array 8
+    dv = new DataView a
+    dv.getFloat64 0, false
 
   #-----------------------------------------
 
-  _read_float : (nb) -> 
-    a = @read_byte_array nb
+  read_float32 : () -> 
+    a = @read_byte_array 4
     dv = new DataView a
-    dv["getFloat#{nb << 3}"].call dv, 0, false
+    dv.getFloat32 0, false
 
   #-----------------------------------------
 
