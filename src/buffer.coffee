@@ -366,7 +366,7 @@ exports.Buffer = class MyBuffer
   read_uint16 : () ->
     (@read_uint8() << 8) | @read_uint8()
   read_uint32 : () ->
-    ((@read_uint8() << 24) | (@read_uint8() << 16) | (@read_uint8() << 8 ) | @read_uint8())
+    ((@read_uint8()*pow2(24)) + ((@read_uint8() << 16) | (@read_uint8() << 8 ) | @read_uint8()))
 
   read_int8  : () -> twos_compl_inv @read_uint8(),  8
   read_int16 : () -> twos_compl_inv @read_uint16(), 16
