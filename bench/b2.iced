@@ -10,7 +10,7 @@ class Timer
     now = (new Date()).getTime()
     now - @_start
 
-iters = 10000
+iters = 100000
 
 mpt = new Timer()
 for i in [0...iters]

@@ -49,8 +49,10 @@ exports.Buffer = class BaseBuffer
 
   encode : (e) -> @toString e
 
+  #-----------------------------------------
+
   _get : (i, n) -> throw new Error "pure virtual method"
-   
+     
   #-----------------------------------------
 
   ui8a_encode : () ->

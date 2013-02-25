@@ -115,41 +115,29 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
       @_tot += n
       bp += n
     @
-
-  #-----------------------------------------
-
-  push_utf8_string : (s) ->
-    for i in [0...s.length]
-      cc = s.charCodeAt i
-      @push_utf8_codepoint cc
-    @
-
-  #-----------------------------------------
-
-  encode : (e) -> @toString e
-   
+ 
   #-----------------------------------------
 
   bytes_left : () -> @_tot - @_cp
 
   #-----------------------------------------
 
+  _zero_pad : (n) -> if n? then ( 0 for j in [0...n] ) else 0
+
   # Get n characters starting at index i.
   # If n is null, then assume just 1 character and return
   # as a scalar.  Otherwise, return as a list of chars.
   # Might return fewer than n bytes!
   _get : (i, n = null) ->
-    zero_pad = if n? then ( 0 for j in [0...n] ) else 0
-    ret = if i >= @_tot then zero_pad
+    ret = if i >= @_tot then @_zero_pad n
     else
       bi = if @_logsz then (i >>> @_logsz) else 0 # buffer index
       li = i % @_sz                               # local index
       lim = if bi is @_b then @_i else @_sz       # local limit
 
-      ret = if bi > @_b or li >= lim then zero_pad
+      ret = if bi > @_b or li >= lim then @_zero_pad n
       else if not n? 
-        c = @_buffers[bi][li]
-        c
+        @_buffers[bi][li]
       else
         n = Math.min( lim - li, n )
         @_buffers[bi].subarray(li, (li+n))
@@ -165,7 +153,6 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
     @_tot = @_sz = @_i = v.length
     @_no_push = true
     @
-
 
   #-----------------------------------------
 
