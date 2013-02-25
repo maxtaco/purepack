@@ -8,6 +8,6 @@ exports.test_convert_doubles = (T, cb) ->
     buf = new purepack.Buffer
     conv = new purepack.FloatConverter.make buf
     conv.pack_float64 f
-    out = conv.consume_float64()
+    out = conv.read_float64()
     T.equal f, out, "Encoding #{f} #{out}"
   cb()

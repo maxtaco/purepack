@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer,utf8_to_ui8a,ui8a_to_binary} = require './buffer'
+{Buffer} = require './buffer'
 {pow2,rshift,twos_compl,U32MAX} = require './util'
 floats = require './floats'
 
@@ -176,7 +176,7 @@ exports.Packer = class Packer
     if @_opts.byte_arrays
       @p_byte C.byte_array
     else
-      b = ui8a_to_binary b    
+      b = Buffer.ui8a_to_binary b    
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b
 
@@ -186,7 +186,7 @@ exports.Packer = class Packer
     # to "\xc2\x8a".  We then encoding this string.  We need to do this conversion
     # outside the buffer class since we need to know the string length to encode
     # up here.
-    b = utf8_to_ui8a b
+    b = Buffer.utf8_to_ui8a b
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b
 

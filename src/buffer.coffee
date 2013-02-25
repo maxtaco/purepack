@@ -1,5 +1,5 @@
 
-{pow2,rshift} = require './util'
+{pow2,rshift,twos_compl_inv} = require './util'
 
 ##=======================================================================
 
@@ -161,6 +161,7 @@ exports.Buffer = class MyBuffer
   # Get n characters starting at index i.
   # If n is null, then assume just 1 character and return
   # as a scalar.  Otherwise, return as a list of chars.
+  # Might return fewer than n bytes!
   _get : (i, n = null) ->
     zero_pad = if n? then ( 0 for j in [0...n] ) else 0
     ret = if i >= @_tot then zero_pad
@@ -183,7 +184,7 @@ exports.Buffer = class MyBuffer
   ui8a_encode : () ->
     hold = @_cp
     @_cp = 0
-    raw = @consume_byte_array @_tot
+    raw = @read_byte_array @_tot
     @_cp = hold
     raw
   
@@ -357,27 +358,49 @@ exports.Buffer = class MyBuffer
 
   #-----------------------------------------
 
-  consume_byte : () -> @_get @_cp++
-  
-  #-----------------------------------------
-
-  consume_bytes : (n) -> (@consume_byte() for i in [0...n])
+  read_bytes : (n) -> (@read_uint8() for i in [0...n])
 
   #-----------------------------------------
 
-  consume_chunk : (n) ->
+  read_uint8  : () -> @_get @_cp++
+  read_uint16 : () ->
+    (@read_uint8() << 8) | @read_uint8()
+  read_uint32 : () ->
+    ((@read_uint8() << 24) | (@read_uint8() << 16) | (@read_uint8() << 8 ) | @read_uint8())
+
+  read_int8  : () -> twos_compl_inv @read_uint8(),  8
+  read_int16 : () -> twos_compl_inv @read_uint16(), 16
+  read_int32 : () -> twos_compl_inv @read_uint32(), 32
+
+  #-----------------------------------------
+
+  read_double : () -> @_read_float 8
+  read_float  : () -> @_read_float 4
+
+  #-----------------------------------------
+
+  _read_float : (nb) -> 
+    a = @read_byte_array nb
+    dv = new DataView a
+    dv["getFloat#{nb << 3}"].call dv, 0, false
+
+  #-----------------------------------------
+
+  # Read n or fewer bytes from the buffer
+  read_chunk : (n) ->
     ret = @_get @_cp, n
     @_cp += ret.length
     ret
 
   #-----------------------------------------
 
-  consume_byte_array : (n) ->
+  # read exactly n bytes from the buffer
+  read_byte_array : (n) ->
     i = 0
     n = @prep_byte_grab n
     ret = new Uint8Array(n)
     while i < n
-      chnk = @consume_chunk(n-i)
+      chnk = @read_chunk(n-i)
       ret.set chnk, i
       i += chnk.length
     return ret
@@ -393,13 +416,13 @@ exports.Buffer = class MyBuffer
   
   #-----------------------------------------
 
-  consume_utf8_string : (n) ->
+  read_utf8_string : (n) ->
     i = 0
     n = @prep_byte_grab n
     chnksz = 0x400
     tmp = while i < n
       s = Math.min n-i, chnksz
-      chnk = @consume_chunk s
+      chnk = @read_chunk s
       i += chnk.length
       encode_chunk chnk
     try
@@ -408,6 +431,49 @@ exports.Buffer = class MyBuffer
       @_e.push "Invalid UTF-8 sequence"
       ret = ""
     ret
+
+  # Covert a javascript UTF-8 string to a Uint8Array of the character-by-character
+  # encodings.  I wish there were a fast, clean way to do this.  We could
+  # also write the encoder by hand, but if we did, we couldn't use 
+  # String.fromCharCode, since that doesn't work over codepoints with values 
+  # over 0x10000.
+  #
+  #  In node, we could do something like this:
+  #
+  #      new Uint8Array( new NodeBuffer s, 'utf8' )
+  #
+  # While way faster than way we're currently doing, it's still much slower than
+  # just manipulating buffers directly.
+  #
+  @utf8_to_ui8a : (s) ->
+    s = encodeURIComponent s
+    n = s.length
+    ret = new Uint8Array s.length
+    rp = 0
+    i = 0
+    while i < n
+      c = s[i]
+      if c is '%'
+        c = parseInt s[(i+1)..(i+2)], 16
+        i += 3
+      else 
+        c = c.charCodeAt 0
+        i++
+      ret[rp++] = c
+    ret.subarray(0,rp)
+
+  #-----------------------------------------
+  
+  @ui8a_to_binary : (b) ->
+    chnksz = 0x100
+    n = b.length
+    i = 0
+    parts = []
+    while i < n
+      s = Math.min(n-i,chnksz)  
+      parts.push String.fromCharCode b.subarray(i,i+s)...
+      i += n
+    parts.join ''
 
 ##=======================================================================
 
@@ -436,50 +502,3 @@ encode_chunk = (chunk) ->
       encode_byte chunk[i++]
   out = parts.join ''
   return out
-
-##=======================================================================
-
-# Covert a javascript UTF-8 string to a Uint8Array of the character-by-character
-# encodings.  I wish there were a fast, clean way to do this.  We could
-# also write the encoder by hand, but if we did, we couldn't use 
-# String.fromCharCode, since that doesn't work over codepoints with values 
-# over 0x10000.
-#
-#  In node, we could do something like this:
-#
-#      new Uint8Array( new NodeBuffer s, 'utf8' )
-#
-# While way faster than way we're currently doing, it's still much slower than
-# just manipulating buffers directly.
-#
-exports.utf8_to_ui8a = (s) ->
-  s = encodeURIComponent s
-  n = s.length
-  ret = new Uint8Array s.length
-  rp = 0
-  i = 0
-  while i < n
-    c = s[i]
-    if c is '%'
-      c = parseInt s[(i+1)..(i+2)], 16
-      i += 3
-    else 
-      c = c.charCodeAt 0
-      i++
-    ret[rp++] = c
-  ret.subarray(0,rp)
-
-##=======================================================================
-
-exports.ui8a_to_binary = (b) ->
-  chnksz = 0x100
-  n = b.length
-  i = 0
-  parts = []
-  while i < n
-    s = Math.min(n-i,chnksz)  
-    parts.push String.fromCharCode b.subarray(i,i+s)...
-    i += n
-  parts.join ''
-
-##=======================================================================

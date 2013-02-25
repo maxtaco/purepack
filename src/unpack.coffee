@@ -25,8 +25,8 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u_bytes : (n, mode) ->
-    if mode is modes.BINARY then @_buffer.consume_byte_array n
-    else @_buffer.consume_utf8_string n
+    if mode is modes.BINARY then @_buffer.read_byte_array n
+    else @_buffer.read_utf8_string n
    
   #-----------------------------------------
 
@@ -46,34 +46,18 @@ exports.Unpacker = class Unpacker
      
   #-----------------------------------------
 
-  u_uint8 : () -> @_buffer.consume_byte()
-  u_int8 : () -> twos_compl_inv @u_uint8(), 8
-  u_uint16 : () ->
-    v = @_buffer.consume_bytes 2
-    return (v[0] << 8 | v[1])
-  u_int16 : () -> twos_compl_inv @u_uint16(), 16
-  u_uint32 : () ->
-    v = @_buffer.consume_bytes 4
-    sum = 0
-    sum += b*pow2(8*(3-i)) for b,i in v
-    return sum
-  u_int32 : () ->
-    return twos_compl_inv @u_uint32(), 32
+  u_uint8  : () -> @_buffer.read_uint8()
+  u_uint16 : () -> @_buffer.read_uint16()
+  u_uint32 : () -> @_buffer.read_uint32()
+  u_int8   : () -> @_buffer.read_int8()
+  u_int16  : () -> @_buffer.read_int16()
+  u_int32  : () -> @_buffer.read_int32()
   u_uint64 : () -> (@u_uint32() * U32MAX) + @u_uint32()
 
   #-----------------------------------------
 
-  u_double : () ->
-    cnv = floats.Converter.make @_buffer
-    if cnv? then cnv.consume_float64()
-    else @error "Sorry, no float64 decoding support"
-    
-  #-----------------------------------------
-
-  u_float : () ->
-    cnv = floats.Converter.make @_buffer
-    if cnv? then cnv.consume_float32()
-    else @error "Sorry, no float32 decoding support"
+  u_double : () -> @_buffer.read_double()
+  u_float  : () -> @_buffer.read_float()
     
   #-----------------------------------------
 
@@ -108,7 +92,7 @@ exports.Unpacker = class Unpacker
 
   u_inner : (last_mode) ->
     mode = modes.NONE
-    b = @_buffer.consume_byte()
+    b = @_buffer.read_uint8()
     ret = if b <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
       twos_compl_inv b, 8
