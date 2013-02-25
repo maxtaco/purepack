@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer} = require './buffer'
+{Buffer} = require './browser'
 {pow2,twos_compl_inv,U32MAX} = require './util'
 floats = require './floats'
 
