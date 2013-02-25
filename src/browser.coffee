@@ -1,6 +1,6 @@
 
 {pow2,rshift,twos_compl_inv} = require './util'
-BaseBuffer = require('./buffer').Buffer
+BaseBuffer = require('./base').Buffer
 
 ##=======================================================================
 
@@ -39,6 +39,10 @@ exports.Buffer = class BrowserBuffer extends BaseBuffer
 
   _left_in_buffer : () -> (@_sz - @_i)
 
+  #-----------------------------------------
+
+  @decode : (s, enc) -> BaseBuffer._decode BrowserBuffer, s, enc
+  
   #-----------------------------------------
    
   push_byte   : (b) ->
