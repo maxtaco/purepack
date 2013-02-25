@@ -1,5 +1,6 @@
 
 base = require('./base')
+{twos_compl_inv} = require './util'
 
 ##=======================================================================
 
@@ -67,25 +68,34 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @_ab().writeUInt16BE s, @_i
     @_i += n
     @_tot += n
-
   push_uint32 : (w) ->
     n = 4
     @_make_room_for_n_bytes n
     @_ab().writeUInt32BE w, @_i
     @_i += n
     @_tot += n
-
   push_int16 : (s) -> 
     n = 2
     @_make_room_for_n_bytes n
     @_ab().writeInt16BE s, @_i
     @_i += n
     @_tot += n
-
   push_int32 : (w) ->
     n = 4
     @_make_room_for_n_bytes n
     @_ab().writeInt32BE w, @_i
+    @_i += n
+    @_tot += n
+  push_float64 : (f) ->
+    n = 8
+    @_make_room_for_n_bytes n
+    @_ab().writeDoubleBE f, @_i
+    @_i += n
+    @_tot += n
+  push_float32 : (f) ->
+    n = 4
+    @_make_room_for_n_bytes n
+    @_ab().writeFloatBE f, @_i
     @_i += n
     @_tot += n
 
@@ -158,6 +168,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   #-----------------------------------------
 
   read_uint8 : () -> @_get @_cp++
+  read_int8  : () -> twos_compl_inv @read_uint8(), 8
 
   read_uint16 : () ->
     ret = @_frozen_buf.readUInt16BE @_cp

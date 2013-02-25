@@ -110,8 +110,8 @@ exports.Packer = class Packer
   p_neg_int64 : (i) ->
     abs_i = 0 - i
     [a,b] = u64max_minus_i abs_i
-    @p_int32 a
-    @p_int32 b
+    @p_uint32 a
+    @p_uint32 b
    
   #-----------------------------------------
 
