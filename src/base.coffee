@@ -28,6 +28,8 @@ exports.Buffer = class BaseBuffer
   
   constructor : () ->
     @_e = []
+    @_cp = 0
+    @_tot = 0
 
   #-----------------------------------------
 
@@ -81,6 +83,10 @@ exports.Buffer = class BaseBuffer
       tmp += @B16.fwd[(c & 0xf)]
     tmp
    
+  #-----------------------------------------
+
+  bytes_left : () -> @_tot - @_cp
+
   #-----------------------------------------
 
   base32_encode : () ->

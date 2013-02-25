@@ -100,7 +100,8 @@ exports.corrupt1 = (T,cb) ->
   T.assert err?, "error was found"
   T.assert (res.email is 'themax@gmail.com'), "found email"
   T.equal err[0], "Corruption: asked for 5074543 bytes, but only 137 available"
-  T.equal err[1], "Invalid UTF-8 sequence"
+  if purepack.Buffer.type() is 'browser'
+    T.equal err[1], "Invalid UTF-8 sequence"
   cb()
 
 exports.floats = (T,cb) ->

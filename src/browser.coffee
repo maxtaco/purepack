@@ -21,8 +21,6 @@ exports.Buffer = class BrowserBuffer extends base.Buffer
     @_push_new_buffer()
     @_i = 0
     @_b = 0
-    @_cp = 0
-    @_tot = 0
     @_no_push = false
     @_e = []
 
@@ -116,10 +114,6 @@ exports.Buffer = class BrowserBuffer extends base.Buffer
       bp += n
     @
  
-  #-----------------------------------------
-
-  bytes_left : () -> @_tot - @_cp
-
   #-----------------------------------------
 
   _zero_pad : (n) -> if n? then ( 0 for j in [0...n] ) else 0
@@ -295,6 +289,8 @@ exports.Buffer = class BrowserBuffer extends base.Buffer
   @to_byte_array : (b) ->
     if base.is_uint8_array b then new Buffer b
     else null
+
+  @type : -> 'browser'
 
 ##=======================================================================
 

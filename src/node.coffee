@@ -20,8 +20,6 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
     @_logsz = 12
     @_i = 0
-    @_tot = 0
-    @_cp = 0
 
   #-----------------------------------------
 
@@ -194,11 +192,17 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     ret = @_frozen_buf.readFloatBE @_cp
     @_cp += 4
     return ret
+
   read_byte_array : (n) ->
+    bl = @bytes_left()
+    if n > bl
+      @_e.push "Corruption: asked for #{n} bytes, but only #{bl} available"
+      n = bl
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]
     @_cp = e
     return ret
+
   read_utf8_string : (n) ->
     @read_byte_array(n).toString 'utf8'
 
@@ -209,5 +213,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     if Buffer.isBuffer b then b
     else if base.is_uint8_array b then new Buffer b
     else null
+
+  @type : () -> 'node'
 
 
