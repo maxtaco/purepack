@@ -38,7 +38,7 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
 
   _push_buffer : (b) ->
     @_finish_buffer() if @_buffers.length
-    @left_in_buffer = () -> @_sz - @_i
+    @_lib = () -> @_sz - @_i
     @_buffers.push b
     b
 
@@ -119,6 +119,14 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
 
   #-----------------------------------------
 
+  _freeze_to : (b) ->
+    @_frozen_buf = b
+    @_tot = b.length
+    @_buffers = []
+    @
+
+  #-----------------------------------------
+
   _prepare_encoding : () -> @_freeze()
 
   #-----------------------------------------
@@ -128,12 +136,12 @@ exports.Buffer = class NodeBuffer extends BaseBuffer
   binary_encode : () -> @_freeze().toString 'binary'
   ui8a_encode   : () -> new Uint8Array @_freeze()
 
-  base64_decode : (d) -> @_frozen_buf = new Buffer d, 'base64'
-  base16_decode : (d) -> @_frozen_buf = new Buffer d, 'hex'
+  base64_decode : (d) -> @_freeze_to( new Buffer d, 'base64' )
+  base16_decode : (d) -> @_freeze_to( new Buffer d, 'hex'    )
  
   #-----------------------------------------
 
-  _get : (i) -> @_frozen_buf[i]
+  _get : (i) -> if i < @_tot then @_frozen_buf[i] else 0
 
   #-----------------------------------------
 
