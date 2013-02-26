@@ -1,4 +1,4 @@
-mpack = require 'msgpack2'
+mpack = require 'msgpack'
 purepack = require '../src/main'
 
 compare = (T, obj, nm) -> 
