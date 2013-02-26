@@ -23,7 +23,9 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   #-----------------------------------------
 
-  @decode = (s, enc) -> base.Buffer._decode NodeBuffer, s, enc
+  @decode = (s, enc) -> 
+    if not enc? and Buffer.isBuffer s then enc = 'buffer'
+    base.Buffer._decode NodeBuffer, s, enc
 
   #-----------------------------------------
 
@@ -152,11 +154,13 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   base16_encode : () -> @_freeze().toString 'hex'
   binary_encode : () -> @_freeze().toString 'binary'
   ui8a_encode   : () -> new Uint8Array @_freeze()
+  buffer_encode : () -> @_freeze()
 
   base64_decode : (d) -> @_freeze_to( new Buffer d, 'base64' )
   base16_decode : (d) -> @_freeze_to( new Buffer d, 'hex'    )
   binary_decode : (d) -> @_freeze_to( new Buffer d, 'binary' )
   ui8a_decode   : (d) -> @_freeze_to( new Buffer d )
+  buffer_decode : (d) -> @_freeze_to( d )
  
   #-----------------------------------------
 

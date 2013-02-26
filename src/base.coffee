@@ -42,6 +42,7 @@ exports.Buffer = class BaseBuffer
   toString : (enc = 'base64') ->
     @_prepare_encoding()
     switch enc
+      when 'buffer'  then @buffer_encode()
       when 'base64'  then @base64_encode()
       when 'base64a' then @base64a_encode()
       when 'base64x' then @base64x_encode()
@@ -66,6 +67,8 @@ exports.Buffer = class BaseBuffer
     raw = @read_byte_array @_tot
     @_cp = hold
     raw
+
+  buffer_encode : () -> @ui8a_encode()
   
   #-----------------------------------------
 
@@ -141,7 +144,9 @@ exports.Buffer = class BaseBuffer
 
   @_decode : (klass, s, enc) ->
     obj = new klass
+    if not enc? and typeof(s) is 'string' then enc = 'base64'
     switch enc
+      when 'buffer'  then obj.buffer_decode s
       when 'binary'  then obj.binary_decode s
       when 'base64'  then obj.base64_decode s
       when 'base64a' then obj.base64a_decode s
@@ -149,7 +154,12 @@ exports.Buffer = class BaseBuffer
       when 'base32'  then obj.base32_decode s
       when 'hex'     then obj.base16_decode s
       when 'ui8a'    then obj.ui8a_decode s
+      else  null
      
+  #-----------------------------------------
+
+  buffer_decode : (s) -> @ui8a_decode s
+  
   #-----------------------------------------
   
   binary_decode : (b) ->

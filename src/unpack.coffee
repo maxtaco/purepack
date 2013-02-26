@@ -141,7 +141,7 @@ exports.Unpacker = class Unpacker
       
 ##=======================================================================
 
-exports.unpack = (x, enc = 'base64') ->
+exports.unpack = (x, enc) ->
   unpacker = new Unpacker
   err = null
   res = null
