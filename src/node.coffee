@@ -105,7 +105,6 @@ exports.Buffer = class NodeBuffer extends base.Buffer
       @_push_sub_buffer b
       @_i = b.length
       @_tot += b.length
-      @_make_room()
     else
       n = Math.min b.length, @_lib()
       if n > 0

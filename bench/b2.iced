@@ -23,6 +23,7 @@ pure = () ->
   for i in [0...iters]
     packer = new Packer()
     packer.p obj
+    #x = new Buffer obj, 'utf8'
   console.log "iters #{iters}: purepack:  #{ppt.stop()}"
 
 c()
