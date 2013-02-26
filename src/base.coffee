@@ -144,17 +144,19 @@ exports.Buffer = class BaseBuffer
 
   @_decode : (klass, s, enc) ->
     obj = new klass
-    if not enc? and typeof(s) is 'string' then enc = 'base64'
-    switch enc
-      when 'buffer'  then obj.buffer_decode s
-      when 'binary'  then obj.binary_decode s
-      when 'base64'  then obj.base64_decode s
-      when 'base64a' then obj.base64a_decode s
-      when 'base64x' then obj.base64x_decode s
-      when 'base32'  then obj.base32_decode s
-      when 'hex'     then obj.base16_decode s
-      when 'ui8a'    then obj.ui8a_decode s
-      else  null
+    if not enc? and typeof(s) is 'string'
+      obj.base64_decode s
+    else 
+      switch enc
+        when 'buffer'  then obj.buffer_decode s
+        when 'binary'  then obj.binary_decode s
+        when 'base64'  then obj.base64_decode s
+        when 'base64a' then obj.base64a_decode s
+        when 'base64x' then obj.base64x_decode s
+        when 'base32'  then obj.base32_decode s
+        when 'hex'     then obj.base16_decode s
+        when 'ui8a'    then obj.ui8a_decode s
+        else  null
      
   #-----------------------------------------
 

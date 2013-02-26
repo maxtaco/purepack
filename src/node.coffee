@@ -24,8 +24,10 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   #-----------------------------------------
 
   @decode = (s, enc) -> 
-    if not enc? and Buffer.isBuffer s then enc = 'buffer'
-    base.Buffer._decode NodeBuffer, s, enc
+    if not enc? and Buffer.isBuffer s
+      (new NodeBuffer).buffer_decode s
+    else
+      base.Buffer._decode NodeBuffer, s, enc
 
   #-----------------------------------------
 
