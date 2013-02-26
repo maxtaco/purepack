@@ -14,11 +14,11 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @_sub_buffers = []
     @_limits = []
 
-    # _small_buf_sz must be less than _sz
-    @_sz = 0x1000
-    @_small_buf_sz = 0x200
+    # _small_buf_sz must be less than _sz; otherwise, crash!
+    @_sz = 0x400
+    @_small_buf_sz = 0x100
 
-    @_logsz = 12
+    @_logsz = 10
     @_i = 0
 
   #-----------------------------------------
@@ -101,7 +101,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @push_buffer( new Buffer s, 'binary' )
 
   push_buffer : (b) ->
-    if b.length > Math.min(@_small_buf_sz, @_sz)
+    if b.length > @_small_buf_sz
       @_push_sub_buffer b
       @_i = b.length
       @_tot += b.length
