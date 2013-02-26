@@ -10,7 +10,7 @@ class Timer
     now = (new Date()).getTime()
     now - @_start
 
-iters = 10000
+iters = 1000000
 
 c = () ->
   mpt = new Timer()
@@ -20,9 +20,10 @@ c = () ->
 
 pure = () ->
   ppt = new Timer()
-  packer = new Packer()
   for i in [0...iters]
+    packer = new Packer()
     packer.p obj
   console.log "iters #{iters}: purepack:  #{ppt.stop()}"
 
+c()
 pure()
