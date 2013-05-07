@@ -39,7 +39,7 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
 
   #-----------------------------------------
 
-  @decode : (s, enc) -> base.Buffer._decode BrowserBuffer, s, enc
+  @decode : (s, enc) -> base.PpBuffer._decode BrowserBuffer, s, enc
   
   #-----------------------------------------
    
