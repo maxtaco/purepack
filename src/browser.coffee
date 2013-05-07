@@ -9,7 +9,7 @@ base = require('./base')
 # This is a good performance boost over a standard array, but of course
 # we can't push() onto it...
 # 
-exports.Buffer = class BrowserBuffer extends base.PpBuffer
+exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
 
   #-----------------------------------------
   
