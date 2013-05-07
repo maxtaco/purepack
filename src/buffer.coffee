@@ -2,7 +2,7 @@
 # otherwise, fallback to the browser-based buffer
 # (which also works on node)
 
-mod = if Buffer? then './node' else './browser'
-exports.Buffer = require(mod).Buffer
+mod = if window? then './browser' else './node'
+exports.PpBuffer = require(mod).PpBuffer
 
-exports.force = (which) -> exports.Buffer = which
+exports.force = (which) -> exports.PpBuffer = which

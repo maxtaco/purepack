@@ -4,7 +4,11 @@ base = require('./base')
 
 ##=======================================================================
 
-exports.Buffer = class NodeBuffer extends base.Buffer
+NativeBuffer = eval("Buffer")
+
+##=======================================================================
+
+exports.PpBuffer = class NodeBuffer extends base.PpBuffer
 
   #-----------------------------------------
 
@@ -24,10 +28,10 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   #-----------------------------------------
 
   @decode = (s, enc) -> 
-    if not enc? and Buffer.isBuffer s
+    if not enc? and NativeBuffer.isBuffer s
       (new NodeBuffer).buffer_decode s
     else
-      base.Buffer._decode NodeBuffer, s, enc
+      base.PpBuffer._decode NodeBuffer, s, enc
 
   #-----------------------------------------
 
@@ -51,7 +55,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
 
   #-----------------------------------------
 
-  _make_room : () -> @_push_sub_buffer new Buffer @_sz
+  _make_room : () -> @_push_sub_buffer new NativeBuffer @_sz
   _make_room_for_n_bytes : (n) -> @_make_room() if @_lib() < n
 
   #-----------------------------------------
@@ -102,7 +106,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
     @_tot += n
 
   push_raw_bytes : (s) ->
-    @push_buffer( new Buffer s, 'binary' )
+    @push_buffer( new NativeBuffer s, 'binary' )
 
   push_buffer : (b) ->
     if b.length > @_small_buf_sz
@@ -135,7 +139,7 @@ exports.Buffer = class NodeBuffer extends base.Buffer
         else if l > 0
           lst.push b[0...l]
       @_sub_buffers = []
-      @_frozen_buf = Buffer.concat lst, @_tot
+      @_frozen_buf = NativeBuffer.concat lst, @_tot
     @_frozen_buf
 
   #-----------------------------------------
@@ -158,10 +162,10 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   ui8a_encode   : () -> new Uint8Array @_freeze()
   buffer_encode : () -> @_freeze()
 
-  base64_decode : (d) -> @_freeze_to( new Buffer d, 'base64' )
-  base16_decode : (d) -> @_freeze_to( new Buffer d, 'hex'    )
-  binary_decode : (d) -> @_freeze_to( new Buffer d, 'binary' )
-  ui8a_decode   : (d) -> @_freeze_to( new Buffer d )
+  base64_decode : (d) -> @_freeze_to( new NativeBuffer d, 'base64' )
+  base16_decode : (d) -> @_freeze_to( new NativeBuffer d, 'hex'    )
+  binary_decode : (d) -> @_freeze_to( new NativeBuffer d, 'binary' )
+  ui8a_decode   : (d) -> @_freeze_to( new NativeBuffer d )
   buffer_decode : (d) -> @_freeze_to( d )
  
   #-----------------------------------------
@@ -211,12 +215,12 @@ exports.Buffer = class NodeBuffer extends base.Buffer
   read_utf8_string : (n) ->
     @read_byte_array(n).toString 'utf8'
 
-  @utf8_to_ui8a   : (s) -> new Buffer s, 'utf8'
+  @utf8_to_ui8a   : (s) -> new NativeBuffer s, 'utf8'
   @ui8a_to_binary : (s) -> s
 
   @to_byte_array : (b) ->
-    if Buffer.isBuffer b then b
-    else if base.is_uint8_array b then new Buffer b
+    if NativeBuffer.isBuffer b then b
+    else if base.is_uint8_array b then new NativeBuffer b
     else null
 
   @type : () -> 'node'

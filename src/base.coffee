@@ -16,7 +16,7 @@ class CharMap
 # A base buffer class that's going to be shared between the Node and the
 # browser implentation of the Buffer class.
 #
-exports.Buffer = class BaseBuffer
+exports.PpBuffer = class BaseBuffer
 
   B16 : new CharMap "0123456789abcdef"
   B32 : new CharMap "abcdefghijkmnpqrstuvwxyz23456789"

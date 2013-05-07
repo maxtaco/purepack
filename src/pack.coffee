@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer} = require './buffer'
+{PpBuffer} = require './buffer'
 {U32MAX} = require './util'
 
 ##=======================================================================
@@ -53,7 +53,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   constructor: (@_opts = {}) ->
-    @_buffer = new Buffer()
+    @_buffer = new PpBuffer()
 
   #-----------------------------------------
 
@@ -71,7 +71,7 @@ exports.Packer = class Packer
       when 'object'
         if not o?                             then @p_null()
         else if is_array o                    then @p_array o
-        else if (ba = Buffer.to_byte_array o) then @p_byte_array ba
+        else if (ba = PpBuffer.to_byte_array o) then @p_byte_array ba
         else                                       @p_obj o
 
   #-----------------------------------------
@@ -174,7 +174,7 @@ exports.Packer = class Packer
     if @_opts.byte_arrays
       @p_uint8 C.byte_array
     else
-      b = Buffer.ui8a_to_binary b    
+      b = PpBuffer.ui8a_to_binary b    
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b
 
@@ -184,7 +184,7 @@ exports.Packer = class Packer
     # to "\xc2\x8a".  We then encoding this string.  We need to do this conversion
     # outside the buffer class since we need to know the string length to encode
     # up here.
-    b = Buffer.utf8_to_ui8a b
+    b = PpBuffer.utf8_to_ui8a b
     @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
     @_buffer.push_buffer b
 

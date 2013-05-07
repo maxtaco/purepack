@@ -1,6 +1,6 @@
 
 {C} = require './const'
-{Buffer} = require './buffer'
+{PpBuffer} = require './buffer'
 {pow2,twos_compl_inv,U32MAX} = require './util'
 
 ##=======================================================================a
@@ -19,7 +19,7 @@ exports.Unpacker = class Unpacker
     
   #-----------------------------------------
   
-  decode : (s, enc) -> return !! (@_buffer = Buffer.decode s, enc)
+  decode : (s, enc) -> return !! (@_buffer = PpBuffer.decode s, enc)
 
   #-----------------------------------------
 
