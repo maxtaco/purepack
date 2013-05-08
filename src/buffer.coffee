@@ -10,8 +10,11 @@ browser = require './browser'
 # are fine with ours.  If we check for a Buffer? directly,
 # we will wind up getting a real buffer object.  We'll assume
 # for now (window? XOR Buffer?) is true, though it's not ideal....
-node    = require './node' unless window?
-
-exports.PpBuffer = if node? then node.PpBuffer else browser.PpBuffer
+exports.PpBuffer = if window?
+  browser.PpBuffer
+else
+  fn = "./node"
+  node = require fn
+  node.PpBuffer
 
 exports.force = (which) -> exports.PpBuffer = which
