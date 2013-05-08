@@ -109,8 +109,8 @@ exports.floats = (T,cb) ->
   enc = "base64"
   packed = purepack.pack obj, enc, floats : true
   [err, unpacked] = purepack.unpack packed, enc
-  T.assert (not err?)
+  T.assert( (not err?), "packing of floats worked..." )
   for val,i in obj
-    T.assert(Math.abs(val - unpacked[i]) < .0001)
+    T.assert((Math.abs(val - unpacked[i]) < .0001), "float-#{i} (#{val})")
   cb()
 

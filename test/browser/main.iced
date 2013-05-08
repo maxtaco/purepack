@@ -6,5 +6,6 @@ mods =
 
 {BrowserRunner} = require('iced-test')
 
-br = new BrowserRunner { log : "log-div", rc : "rc-div" }
-await br.run mods, defer rc
+window.onload = () ->
+  br = new BrowserRunner { log : "log", rc : "rc" }
+  await br.run mods, defer rc

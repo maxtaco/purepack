@@ -21,19 +21,19 @@ exports.test1 = (T, cb) ->
   cb()
 
 random_array = (n) ->
-  new Uint8Array crypto.prng n
+  new Uint8Array crypto.randomBytes n
    
 exports.random1 = (T,cb) ->
-  a = new Uint8Array crypto.prng 0x10000
+  a = new Uint8Array crypto.randomBytes 0x10000
   compare T, a, "prng-generated array"
   cb()
 
 exports.random2 = (T,cb) ->
-  a = new Uint8Array crypto.prng 0x10000
+  a = new Uint8Array crypto.randomBytes 0x10000
   obj =
     aaa : random_array 1000
     bbbb : [ (random_array 10000), 1, 2, 3]
     ccc :
       dd : random_array 0x1000
-  compare T, obj, "prng-generated object"
+  compare T, obj, "rng-generated object"
   cb()

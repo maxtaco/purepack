@@ -3,9 +3,7 @@ path          = require 'path'
 iu            = require 'iced-utils'
 {spawn}       = iu.spawn
 {mkdir_p}     = iu.fs
-stitch        = require 'stitch'
 colors        = require 'colors'
-uglify        = require 'uglify-js'
 
 ##=======================================================================
 
@@ -63,7 +61,7 @@ task 'test', "run the test suite", (cb) ->
   process.exit(1) if status != 0
   cbcall cb
 
-task 'btest', "run the test suite for the browser buffer", (cb) ->
+task 'btest', "run the test suite for the browser buffer (in node though)", (cb) ->
   await spawn [ "test/run.iced", '--browser'], defer status
   process.exit(1) if status != 0
   cbcall cb
@@ -72,22 +70,4 @@ task 'build', "build coffee into JS", (cb) ->
   await build defer()
   cbcall cb
 
-task 'stitch', "stitch the library into a server-side package", (cb) ->
-  await build defer()
-  s = stitch.createPackage { paths : [ LIB ] }
-  await s.compile defer err, code
-  error "Error in stitch: #{err}" if err?
-  await mkdir_p BUILD, DIRMODE, defer err
-  error "Error in mkdir_p: #{err}" if err?
-  
-  await get_version defer v
-  out = path.join BUILD, "purepack-#{v}.js"
-  await fs.writeFile out, code, defer err
-  error "Failed to write out #{out}: #{err}" if err?
-  
-  {code} = uglify.minify code, fromString : true
-  out = path.join BUILD, "purepack-#{v}-min.js"
-  await fs.writeFile out, code, defer err
-  error "Failed to write out #{out}: #{err}" if err?
-  
-  cbcall cb
+##=======================================================================
