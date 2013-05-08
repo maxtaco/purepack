@@ -4,6 +4,14 @@ base = require('./base')
 
 ##=======================================================================
 
+ui8a_to_array_buffer = (b) ->
+  ret = new ArrayBuffer b.length
+  for c, i in b
+    ret[i] = c
+  return ret
+
+##=======================================================================
+
 #
 # This buffer is made up of a chain of Uint8Arrays, each of fixed size.
 # This is a good performance boost over a standard array, but of course
@@ -62,16 +70,16 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
   #-----------------------------------------
 
   push_float32 : (val) -> 
-    tmp = new Uint8Array 4
+    tmp = new ArrayBuffer 4
     dv = new DataView tmp
     dv.setFloat32 0, val, false
-    @push_buffer tmp
+    @push_buffer new Uint8Array tmp
 
   push_float64 : (val) ->
-    tmp = new Uint8Array 8
+    tmp = new ArrayBuffer 8
     dv = new DataView tmp
     dv.setFloat64 0, val, false
-    @push_buffer tmp
+    @push_buffer new Uint8Array tmp
 
   #-----------------------------------------
   
@@ -167,14 +175,14 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
 
   read_float64 : () -> 
     a = @read_byte_array 8
-    dv = new DataView a
+    dv = new DataView ui8a_to_array_buffer a
     dv.getFloat64 0, false
 
   #-----------------------------------------
 
   read_float32 : () -> 
     a = @read_byte_array 4
-    dv = new DataView a
+    dv = new DataView ui8a_to_array_buffer a
     dv.getFloat32 0, false
 
   #-----------------------------------------
