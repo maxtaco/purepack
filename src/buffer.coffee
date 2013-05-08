@@ -13,6 +13,7 @@ browser = require './browser'
 exports.PpBuffer = if window?
   browser.PpBuffer
 else
+  # This indirection is prevent Browserify from exploring "./node"...
   fn = "./node"
   node = require fn
   node.PpBuffer
