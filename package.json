@@ -14,6 +14,15 @@
   "scripts" : {
     "test" : "icake test"
   },
+  "devDependencies" : {
+    "browserify" : "*",
+    "icsify" : "*",
+    "iced-utils" : "*",
+    "iced-test" : "*",
+    "iced-coffee-script" : "*",
+    "colors" : "*",
+    "deep-equal" : "*"
+  },
   "licenses": [{
       "type": "MIT",
       "url": "http://www.opensource.org/licenses/mit-license.php"

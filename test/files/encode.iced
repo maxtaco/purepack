@@ -1,5 +1,5 @@
 
-purepack = require '../src/main'
+purepack = require '../../src/main.coffee'
 
 
 m0 = "hello"

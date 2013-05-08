@@ -3,7 +3,7 @@
 # (which also works on node)
 
 # Always include our browser-based buffer so that browserify picks it up
-browser = require './browser'
+browser = require './browser.coffee'
 
 # Include and use our Node-based buffer if it's available, but 
 # don't pick up browersify's Buffer, since it's huge and we

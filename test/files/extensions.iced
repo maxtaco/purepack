@@ -1,5 +1,5 @@
 
-purepack =  require '../src/main'
+purepack =  require '../../src/main.coffee'
 crypto = require 'crypto'
 
 ui8a_compare = (a, b) ->

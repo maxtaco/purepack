@@ -7,4 +7,4 @@ if argv.browser
   buf = require '../src/buffer'
   buf.force require('../src/browser').PpBuffer
 
-require('iced-utils').test.run __filename, null, wl
+require('iced-test').run { mainfile : __filename, whitelist : wl, files_dir : "files" }
