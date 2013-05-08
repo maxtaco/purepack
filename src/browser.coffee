@@ -287,7 +287,7 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
   #-----------------------------------------
   
   @to_byte_array : (b) ->
-    if base.is_uint8_array b then new Buffer b
+    if base.is_uint8_array b then b
     else null
 
   @type : -> 'browser'
