@@ -63,6 +63,11 @@ task 'test', "run the test suite", (cb) ->
   process.exit(1) if status != 0
   cbcall cb
 
+task 'btest', "run the test suite for the browser buffer", (cb) ->
+  await spawn [ "test/run.iced", '--browser'], defer status
+  process.exit(1) if status != 0
+  cbcall cb
+
 task 'build', "build coffee into JS", (cb) ->
   await build defer()
   cbcall cb

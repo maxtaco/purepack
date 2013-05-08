@@ -7,8 +7,10 @@ browser = require './browser'
 
 # Include and use our Node-based buffer if it's available, but 
 # don't pick up browersify's Buffer, since it's huge and we
-# are fine with ours....
-node    = require './node' if eval("typeof(Buffer) !== 'undefined' && Buffer !== null")
+# are fine with ours.  If we check for a Buffer? directly,
+# we will wind up getting a real buffer object.  We'll assume
+# for now (window? XOR Buffer?) is true, though it's not ideal....
+node    = require './node' unless window?
 
 exports.PpBuffer = if node? then node.PpBuffer else browser.PpBuffer
 
