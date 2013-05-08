@@ -4,11 +4,15 @@ base = require('./base')
 
 ##=======================================================================
 
-ui8a_to_array_buffer = (b) ->
+ui8a_to_ab = (b) ->
   ret = new ArrayBuffer b.length
   for c, i in b
     ret[i] = c
   return ret
+
+#-----------------------------------------
+
+ab_to_ui8a = (a) -> new Uint8Array a
 
 ##=======================================================================
 
@@ -73,13 +77,13 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
     tmp = new ArrayBuffer 4
     dv = new DataView tmp
     dv.setFloat32 0, val, false
-    @push_buffer new Uint8Array tmp
+    @push_buffer ab_to_ui8a tmp
 
   push_float64 : (val) ->
     tmp = new ArrayBuffer 8
     dv = new DataView tmp
     dv.setFloat64 0, val, false
-    @push_buffer new Uint8Array tmp
+    @push_buffer ab_to_ui8a tmp
 
   #-----------------------------------------
   
@@ -175,14 +179,14 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
 
   read_float64 : () -> 
     a = @read_byte_array 8
-    dv = new DataView ui8a_to_array_buffer a
+    dv = new DataView ui8a_to_ab a
     dv.getFloat64 0, false
 
   #-----------------------------------------
 
   read_float32 : () -> 
     a = @read_byte_array 4
-    dv = new DataView ui8a_to_array_buffer a
+    dv = new DataView ui8a_to_ab a
     dv.getFloat32 0, false
 
   #-----------------------------------------
