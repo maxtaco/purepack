@@ -9,3 +9,4 @@ mods =
 window.onload = () ->
   br = new BrowserRunner { log : "log", rc : "rc" }
   await br.run mods, defer rc
+  console.log require("../../src/main.coffee").pack 3.33333, 'base64'
