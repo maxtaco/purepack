@@ -35,7 +35,7 @@ test/browser/test.js: test/browser/main.iced $(BUILD_STAMP)
 test-browser: test/browser/test.js
 
 clean:
-	rm -f lib/*.js test/compare/data.js
+	rm -f lib/*.js test/pack/data.js $(BUILD_STAMP)
 
 default: build
 all: build
