@@ -11,10 +11,8 @@ browser = require './browser'
 # we will wind up getting a real buffer object.  We'll assume
 # for now (window? XOR Buffer?) is true, though it's not ideal....
 exports.PpBuffer = if window?
-  console.log "A"
   browser.PpBuffer
 else
-  console.log "B"
   # This indirection is prevent Browserify from exploring "./node"...
   fn = "./node"
   node = require fn
