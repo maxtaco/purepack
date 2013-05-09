@@ -60,3 +60,9 @@ exports.data =
     num_symbols : 0
     generation : 1
     security_bits : 8
+
+  japanese1 : "hello メインページ"
+  japanese2 : "この説明へのリンクにアクセスできる方法はいくつかあり、このエリアに至るまでの経路もいくつかあ"
+  korean1 : "다국어 최상위 도메인 중 하나의 평가 영역입니다"
+  bad_utf1 : "\xaa\xbc\xce\xfe"
+  gothic: "𐌼𐌰𐌲 𐌲𐌻𐌴𐍃 𐌹̈𐍄𐌰𐌽, 𐌽𐌹 𐌼𐌹𐍃 𐍅𐌿 𐌽𐌳𐌰𐌽 𐌱𐍂𐌹𐌲𐌲𐌹𐌸"
