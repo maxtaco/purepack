@@ -36,7 +36,7 @@ After packing, output the result according to the given encoding.  Encodings inc
 * `base64` — Output as a standard base64-encoded string (with `+` and `/` outputs at positions 62 and 63)
 * `base64a` — Output as base64-encoding, with `@` and `_` characters rather than
 the `+` and `/` characters.  Better for URLs.
-* `base64x` - Output as base64-encoding, with `+` and `-` characters rather than
+* `base64x` — Output as base64-encoding, with `+` and `-` characters rather than
 the `+` and `/` characters.  Better for filenames.
 * `base32` — [sfs](https://github.com/okws/sfslite)-style base32-encoding
 * `hex` — Standard base16/hex encoding
