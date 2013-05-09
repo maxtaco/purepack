@@ -4,11 +4,12 @@ base = require('./base')
 
 ##=======================================================================
 
-ui8a_to_ab = (b) ->
-  ret = new ArrayBuffer b.length
+ui8a_to_dv = (b) ->
+  ab = new ArrayBuffer b.length
+  dv = new DataView ab
   for c, i in b
-    ret[i] = c
-  return ret
+    dv.setUint8(i,c)
+  return { ab, dv }
 
 #-----------------------------------------
 
@@ -179,15 +180,17 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
 
   read_float64 : () -> 
     a = @read_byte_array 8
-    dv = new DataView ui8a_to_ab a
-    dv.getFloat64 0, false
+    {ab,dv} = ui8a_to_dv a
+    r = dv.getFloat64 0, false
+    return r
 
   #-----------------------------------------
 
   read_float32 : () -> 
     a = @read_byte_array 4
-    dv = new DataView ui8a_to_ab a
-    dv.getFloat32 0, false
+    {ab,dv} = ui8a_to_dv a
+    r = dv.getFloat32 0, false
+    return r
 
   #-----------------------------------------
 

@@ -2,12 +2,14 @@
 ICED=node_modules/.bin/iced
 BROWSERIFY=node_modules/.bin/browserify
 BUILD_STAMP=build-stamp
+WD=`pwd`
 
 
 lib/%.js: src/%.coffee
 	$(ICED) -I none -c -o lib $<
 
-$(BUILD_STAMP): lib/main.js \
+$(BUILD_STAMP): \
+	lib/main.js \
 	lib/base.js \
 	lib/browser.js \
 	lib/buffer.js \
@@ -23,7 +25,7 @@ build: $(BUILD_STAMP)
 test/pack/data.js: test/pack/generate.iced test/pack/input.iced
 	$(ICED) test/pack/generate.iced > $@
 
-test: test/pack/data.js
+test-server: test/pack/data.js
 	$(ICED) test/run.iced
 
 test-browser-buffer: test/pack/data.js
@@ -33,6 +35,9 @@ test/browser/test.js: test/browser/main.iced $(BUILD_STAMP) test/pack/data.js
 	$(BROWSERIFY) -t icsify $< > $@
 
 test-browser: test/browser/test.js
+	@echo "Please visit in your favorite browser --> file://$(WD)/test/browser/index.html"
+
+test: test-server test-browser-buffer test-browser
 
 clean:
 	rm -f lib/*.js test/pack/data.js $(BUILD_STAMP)
