@@ -26,6 +26,9 @@ test/pack/data.js: test/pack/generate.iced test/pack/input.iced
 test: test/pack/data.js
 	$(ICED) test/run.iced
 
+test-browser-buffer: test/pack/data.js
+	$(ICED) test/run.iced -b 
+
 test/browser/test.js: test/browser/main.iced $(BUILD_STAMP)
 	$(BROWSERIFY) -t icsify $< > $@
 
