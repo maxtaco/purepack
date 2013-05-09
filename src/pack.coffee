@@ -3,7 +3,7 @@
 {PpBuffer} = require './buffer'
 {U32MAX} = require './util'
 
-##=======================================================================
+##===============/p========================================================
 
 is_array = (x) -> Object.prototype.toString.call(x) is '[object Array]'
 is_int = (f) -> Math.floor(f) is f

@@ -5,6 +5,9 @@ mods =
   unpack : require '../files/unpack.iced'
   pack   : require '../files/pack.iced'
 
+#mods =
+#  "1test" : require '../files/1test.iced'
+
 {BrowserRunner} = require('iced-test')
 
 window.onload = () ->
