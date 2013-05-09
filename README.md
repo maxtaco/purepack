@@ -40,3 +40,9 @@ There are two options currently supported, off by default:
 * `byte_arrays` --- Encode Uint8Arrays differently from UTF-8 strings, using the `0xc4`
 prefix described above.
 
+### purepack.unpack(obj,encoding)
+
+Unpack a packed object `obj`, which has been packed and encoded according to the 
+given `encoding`.  See above for possibilities.  Returns a pair `[err,res]`.  `err`
+will be `null` if the unpacking succeeded, or will be non-null and a description
+if there was an unpacking error. 
