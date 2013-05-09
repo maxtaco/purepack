@@ -27,7 +27,7 @@ After packing, output the result according to the given encoding.  Encodings inc
 the `+` and `/` characters.  Better for URLs.
 * `base64x` --- Output as base64-encoding, with `+` and `-` characters rather than
 the `+` and `/` characters.  Better for filenames.
-* `base32` --- (sfs)[https://github.com/okws/sfslite]-style base32-encoding
+* `base32` --- [sfs](https://github.com/okws/sfslite)-style base32-encoding
 * `hex` --- Standard base16/hex encoding
 * `binary` --- Output as a binary string. Beware, UTF-8 problems ahead!
 * `ui8a` --- Synonym for `buffer` on the browser, or output to a `Uint8Array` on node.
