@@ -1,3 +1,9 @@
-purepack = require '../../src/main.coffee'
+purepack = require '../../lib/main'
 
-{tests} = require '../compare/data.js'
+{tests} = require '../pack/data.js'
+
+for k,v of tests
+  exports[k] = (T, cb) ->
+    mine = purepack.pack v.input
+    T.equal mine, v.output, k
+    cb()

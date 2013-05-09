@@ -1,5 +1,5 @@
 mpack = require 'msgpack'
-purepack = require '../../src/main.coffee'
+purepack = require '../../lib/main'
 
 compare = (T, obj, nm) -> 
   enc = "base64"

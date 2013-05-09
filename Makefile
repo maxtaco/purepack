@@ -1,5 +1,7 @@
 
 ICED=node_modules/.bin/iced
+BROWSERIFY=node_modules/.bin/browserify
+
 
 lib/%.js: src/%.coffee
 	$(ICED) -I none -c -o lib $<
@@ -14,10 +16,24 @@ build: lib/main.js \
 	lib/unpack.js \
 	lib/util.js
 
-test/compare/data.js: test/compare/generate.iced test/compare/input.iced
-	$(ICED) test/compare/generate.iced > $@
+test/pack/data.js: test/pack/generate.iced test/pack/input.iced
+	$(ICED) test/pack/generate.iced > $@
+
+test: test/pack/data.js
+	$(ICED) test/run.iced
+
+test/browser/test.js: test/browser/main.iced | build
+	$(BROWSERIFY) -t icsify $< > $@
+
+test-browser: test/browser/test.js
 
 clean:
 	rm -f lib/*.js test/compare/data.js
 
-.PHONY: clean
+default: build
+all: build
+
+setup:
+	npm install -d
+
+.PHONY: clean setup

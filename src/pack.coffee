@@ -1,7 +1,7 @@
 
-{C} = require './const.coffee'
-{PpBuffer} = require './buffer.coffee'
-{U32MAX} = require './util.coffee'
+{C} = require './const'
+{PpBuffer} = require './buffer'
+{U32MAX} = require './util'
 
 ##=======================================================================
 

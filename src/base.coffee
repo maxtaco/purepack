@@ -1,5 +1,5 @@
 
-{pow2,rshift,twos_compl_inv} = require './util.coffee'
+{pow2,rshift,twos_compl_inv} = require './util'
 
 ##=======================================================================
 

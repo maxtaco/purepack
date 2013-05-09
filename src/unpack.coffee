@@ -1,7 +1,7 @@
 
-{C} = require './const.coffee'
-{PpBuffer} = require './buffer.coffee'
-{pow2,twos_compl_inv,U32MAX} = require './util.coffee'
+{C} = require './const'
+{PpBuffer} = require './buffer'
+{pow2,twos_compl_inv,U32MAX} = require './util'
 
 ##=======================================================================a
 

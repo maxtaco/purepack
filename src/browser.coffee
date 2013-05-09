@@ -1,6 +1,6 @@
 
-{pow2,rshift,twos_compl_inv,twos_compl} = require './util.coffee'
-base = require('./base.coffee')
+{pow2,rshift,twos_compl_inv,twos_compl} = require './util'
+base = require('./base')
 
 ##=======================================================================
 
