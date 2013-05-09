@@ -29,7 +29,7 @@ test: test/pack/data.js
 test-browser-buffer: test/pack/data.js
 	$(ICED) test/run.iced -b 
 
-test/browser/test.js: test/browser/main.iced $(BUILD_STAMP)
+test/browser/test.js: test/browser/main.iced $(BUILD_STAMP) test/pack/data.js
 	$(BROWSERIFY) -t icsify $< > $@
 
 test-browser: test/browser/test.js
@@ -43,4 +43,4 @@ all: build
 setup:
 	npm install -d
 
-.PHONY: clean setup test 
+.PHONY: clean setup test test-browser-buffer
