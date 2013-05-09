@@ -1,4 +1,4 @@
-exports.inputs =  
+exports.data =  
 
   s1 : "hello"
 
@@ -60,5 +60,3 @@ exports.inputs =
     num_symbols : 0
     generation : 1
     security_bits : 8
-
-console.log JSON.stringify exports.inputs
