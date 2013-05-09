@@ -3,7 +3,7 @@ purepack
 
 A pure CoffeeScript implemented of Msgpack.
 
-We've made one addition to the language.  When reserved byte `0xc4` prefaces
+We've made one addition to the spec.  When reserved byte `0xc4` prefaces
 a raw string, the subsequent value is to be interepreted as raw bytes, and
 not a UTF-8 string.
 
