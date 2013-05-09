@@ -43,4 +43,4 @@ all: build
 setup:
 	npm install -d
 
-.PHONY: clean setup
+.PHONY: clean setup test 
