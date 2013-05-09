@@ -28,7 +28,7 @@ objects at its disposal to give you the best performance possible.
 
 Pack an object `obj`.
 
-#### encoding
+##### encoding
 
 After packing, output the result according to the given encoding.  Encodings include
 
@@ -43,7 +43,7 @@ the `+` and `/` characters.  Better for filenames.
 * `binary` - Output as a binary string. Beware, UTF-8 problems ahead!
 * `ui8a` - Synonym for `buffer` on the browser, or output to a `Uint8Array` on node.
 
-#### opts
+##### opts
 
 There are two options currently supported, off by default:
 
