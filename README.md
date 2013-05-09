@@ -11,6 +11,17 @@ To force this behavior on the packing side, feed a Uint8Array to the packer
 (instead of a regular string).  Uint8Arrays will automatically be returned
 from unpacking.
 
+## Install
+
+    npm install purepack
+
+## Where To Use it
+
+Tested and works with [browserify](https://github.com/substack/node-browserify), so
+it's useful for packing and unpacking structures on the browser-side.  It also works
+server-side in `node` processes.  In either case, it finds the fastest buffer
+objects at its disposal to give you the best performance possible.
+
 ## API
 
 ### purepack.pack(obj,encoding,opts)
@@ -46,3 +57,18 @@ Unpack a packed object `obj`, which has been packed and encoded according to the
 given `encoding`.  See above for possibilities.  Returns a pair `[err,res]`.  `err`
 will be `null` if the unpacking succeeded, or will be non-null and a description
 if there was an unpacking error. 
+
+## Building
+
+    make setup
+    make
+
+## Testing
+
+    make setup
+    make
+    make test
+
+Testing will run a series of scripts on your machine using `node`.  It also will
+ask you to visit a URL with whichever browsers you please to test `purepack` 
+use via `browserify` and with your browser's buffer objects.     
