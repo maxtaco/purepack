@@ -149,7 +149,7 @@ exports.Packer = class Packer
     else
       @p_uint8 C.uint64
       @p_uint32 Math.floor(i / U32MAX)
-      @p_uint32 (i & (U32MAX - 1))
+      @p_uint32 (i % U32MAX)
 
   #-----------------------------------------
 
