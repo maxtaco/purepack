@@ -99,9 +99,15 @@ exports.corrupt1 = (T,cb) ->
   [ err, res ] = purepack.unpack x, 'ui8a'
   T.assert err?, "error was found"
   T.assert (res.email is 'themax@gmail.com'), "found email"
-  T.equal err[0], "Corruption: asked for 5074543 bytes, but only 137 available"
-  if purepack.Buffer.type() is 'browser'
-    T.equal err[1], "Invalid UTF-8 sequence"
+  rxx = "Error: in purepack decoding: (\.*)"
+  m = err.toString().match rxx
+  if m?
+    ep = m[1].split "; "
+    T.equal ep[0], "Corruption: asked for 5074543 bytes, but only 137 available"
+    if purepack.Buffer.type() is 'browser'
+      T.equal ep[1], "Invalid UTF-8 sequence"
+  else
+    T.error "Failed to get expected text in Error message"
   cb()
 
 exports.floats = (T,cb) ->

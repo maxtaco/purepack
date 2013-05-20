@@ -33,7 +33,11 @@ exports.PpBuffer = class BaseBuffer
 
   #-----------------------------------------
 
-  get_errors : () -> if @_e.length then @_e else null
+  get_errors : () -> 
+    if @_e.length 
+      txt = @_e.join "; "
+      new Error "in purepack decoding: #{txt}" 
+    else null
 
   #-----------------------------------------
 

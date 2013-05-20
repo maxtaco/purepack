@@ -149,7 +149,7 @@ exports.unpack = (x, enc) ->
     res = unpacker.u()
     err = unpacker.get_errors()
   else
-    err = "Decoding type '#{enc}' failed"
-  return [err, res ]
+    err = new Error "Decoding type '#{enc}' failed"
+  return [ err, res ]
     
 ##=======================================================================
