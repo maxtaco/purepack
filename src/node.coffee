@@ -205,7 +205,7 @@ exports.PpBuffer = class NodeBuffer extends base.PpBuffer
   read_byte_array : (n) ->
     bl = @bytes_left()
     if n > bl
-      @_e.push "Corruption: asked for #{n} bytes, but only #{bl} available"
+      @hit_error "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]

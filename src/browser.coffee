@@ -232,7 +232,7 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
   prep_byte_grab : (n) ->
     bl = @bytes_left()
     if n > bl
-      @_e.push "Corruption: asked for #{n} bytes, but only #{bl} available"
+      @hit_error "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
     return n
   
@@ -250,7 +250,7 @@ exports.PpBuffer = class BrowserBuffer extends base.PpBuffer
     try
       ret = decodeURIComponent tmp.join ''
     catch e
-      @_e.push "Invalid UTF-8 sequence"
+      @hit_error "Invalid UTF-8 sequence"
       ret = ""
     ret
 

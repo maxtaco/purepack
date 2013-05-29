@@ -84,7 +84,7 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   error : (e) ->
-    @_e.push e
+    @_buffer.hit_error e
     null
    
   #-----------------------------------------

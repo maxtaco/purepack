@@ -33,6 +33,10 @@ exports.PpBuffer = class BaseBuffer
 
   #-----------------------------------------
 
+  hit_error : (e) -> @_e.push e
+  
+  #-----------------------------------------
+
   get_errors : () -> 
     if @_e.length 
       txt = @_e.join "; "
