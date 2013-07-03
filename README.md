@@ -1,7 +1,7 @@
 purepack
 ========
 
-A pure CoffeeScript implemented of Msgpack.
+A pure CoffeeScript implementation of Msgpack.
 
 We've made one addition to the spec.  When reserved byte `0xc4` prefaces
 a raw string, the subsequent value is to be interepreted as raw bytes, and
