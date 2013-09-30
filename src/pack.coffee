@@ -126,12 +126,16 @@ exports.Packer = class Packer
    
   #-----------------------------------------
 
+  # Serial with keys sorted in-order so that we can use these things
+  # in hashes and signatures.
   p_obj : (o) ->
-    n = (Object.keys o).length
+    keys = Object.keys o
+    n = keys.length
     @p_len n, C.fix_map_min, C.fix_map_max, C.map16, C.map32
-    for k,v of o
+    keys.sort() if @_opts.sort_keys
+    for k in keys
       @p k
-      @p v
+      @p o[k]
    
   #-----------------------------------------
 
