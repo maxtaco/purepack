@@ -12,7 +12,7 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "icake test"
+    "test": "make test"
   },
   "devDependencies": {
     "browserify": "*",
