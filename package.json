@@ -1,7 +1,7 @@
 {
   "name": "purepack",
-  "version": "5.0.0",
-  "description": "Mainly pure JS implementation of msgpack, with some browser help for doubles",
+  "version": "1.0.0",
+  "description": "A browserify, Pure JS implementation of msgpack spec v5",
   "homepage": "https://github.com/maxtaco/purepack",
   "main": "lib/main",
   "repository": {
@@ -22,7 +22,6 @@
     "iced-coffee-script": "*",
     "colors": "*",
     "deep-equal": "*",
-    "msgpack4": "*",
     "optimist" : "*",
     "msgpack" : "*"
   },

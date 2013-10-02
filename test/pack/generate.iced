@@ -1,6 +1,6 @@
 
 {data} = require './input'
-msgpack = require 'msgpack4'
+msgpack = require 'msgpack'
 util = require 'util'
 
 res = {}
