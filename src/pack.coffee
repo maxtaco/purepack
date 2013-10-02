@@ -120,7 +120,6 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_array : (a) ->
-    console.log a.length
     @p_len a.length, C.fix_array_min, C.fix_array_max, C.array16, C.array32
     @p e for e in a
    
@@ -192,7 +191,11 @@ exports.Packer = class Packer
     # outside the buffer class since we need to know the string length to encode
     # up here.
     b = @_buffer.prepare_utf8 s
-    @p_len b.length, C.fix_str_min, C.fix_str_max, C.str16, C.str32, C.str8
+
+    # we can turn this option off to be compatible with older msgpacks...
+    str8 = if @_opts.no_str8 then null else C.str8
+
+    @p_len b.length, C.fix_str_min, C.fix_str_max, C.str16, C.str32, str8
     @p_buffer b
 
   #-----------------------------------------
@@ -244,6 +247,7 @@ exports.Packer = class Packer
 #   - sort_keys   - sort keys when outputting objects (for hash comparisons esp.)
 #   - ext         - an "extensible hook" which returns [type,buf] on an object if it's
 #                   to be encoded as an extensible object, and null if it's not
+#   - no_str8     - don't use str8's, to be compatible with old msgpacks
 exports.pack = (x, opts = {} ) ->
   packer = new Packer opts
   packer.p x
