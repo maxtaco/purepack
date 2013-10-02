@@ -3,14 +3,6 @@ purepack
 
 A pure CoffeeScript implementation of Msgpack.
 
-We've made one addition to the spec.  When reserved byte `0xc4` prefaces
-a raw string, the subsequent value is to be interepreted as raw bytes, and
-not a UTF-8 string.
-
-To force this behavior on the packing side, feed a Uint8Array to the packer
-(instead of a regular string).  Uint8Arrays will automatically be returned
-from unpacking.
-
 ## Install
 
     npm install purepack
@@ -24,39 +16,31 @@ objects at its disposal to give you the best performance possible.
 
 ## API
 
-### purepack.pack(obj,encoding,opts)
+### purepack.pack(obj,opts)
 
-Pack an object `obj`.
-
-##### encoding
-
-After packing, output the result according to the given encoding.  Encodings include
-
-* `buffer` — Output as a `buffer.Buffer` on node, or a `Uint8Array` buffer in a browser
-* `base64` — Output as a standard base64-encoded string (with `+` and `/` outputs at positions 62 and 63)
-* `base64a` — Output as base64-encoding, with `@` and `_` characters rather than
-the `+` and `/` characters.  Better for URLs.
-* `base64x` — Output as base64-encoding, with `+` and `-` characters rather than
-the `+` and `/` characters.  Better for filenames.
-* `base32` — [sfs](https://github.com/okws/sfslite)-style base32-encoding
-* `hex` — Standard base16/hex encoding
-* `binary` — Output as a binary string. Beware, UTF-8 problems ahead!
-* `ui8a` — Synonym for `buffer` on the browser, or output to a `Uint8Array` on node.
+Pack an object `obj`. Return a `Buffer` object.
 
 ##### opts
 
-There are two options currently supported, off by default:
+Options currently supported, off by default:
 
 * `floats` — Use floats rather than doubles when encoding.  Useful when saving space
-* `byte_arrays` — Encode Uint8Arrays differently from UTF-8 strings, using the `0xc4`
-prefix described above.
+* `sort_keys` - Sort the keys of maps on outputs, so that purepack output can be compared in hashes.
+* `ext` - An 'extensible-type' function.
+* `no_str8` - Don't use 8-bit string encodings, to maintain compatibility with older msgpacks.
 
-### purepack.unpack(obj,encoding)
+### purepack.unpack(buf,opts)
 
-Unpack a packed object `obj`, which has been packed and encoded according to the 
-given `encoding`.  See above for possibilities.  Returns a pair `[err,res]`.  `err`
-will be `null` if the unpacking succeeded, or will be non-null and a description
-if there was an unpacking error. 
+Unpack a packed `Buffer buf`. Throws errors if there were underruns, or bad encodings.
+ 
+##### opts
+
+Currently support options are:
+
+* `ext` - An `extensible-type` function that given a `[type,buf]` tuple, returns
+an object. Can throw an error if needs be.
+* `no_ext` - If no `ext` option is given, we plug in a default, stupid-ish
+`ext` function. Supply this flag if you don't want that.
 
 ## Building
 
