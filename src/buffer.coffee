@@ -12,18 +12,20 @@ exports.PpBuffer = class PpBuffer
 
   #-----------------------------------------
 
-  constructor : () ->
-    super()
-    @_frozen_buf = null
-    @_sub_buffers = []
-    @_limits = []
+  constructor : (buf) ->
+    if buf?
+      @_frozen_buf = null
+      @_sub_buffers = []
+      @_limits = []
 
-    # _small_buf_sz must be less than _sz; otherwise, crash!
-    @_sz = 0x400
-    @_small_buf_sz = 0x100
+      # _small_buf_sz must be less than _sz; otherwise, crash!
+      @_sz = 0x400
+      @_small_buf_sz = 0x100
 
-    @_logsz = 10
-    @_i = 0
+      @_logsz = 10
+      @_i = 0
+    else
+      @_freeze_to buf
 
   #-----------------------------------------
 
@@ -100,6 +102,8 @@ exports.PpBuffer = class PpBuffer
   push_raw_bytes : (s) ->
     @push_buffer( new NativeBuffer s, 'binary' )
 
+  prepare_utf8 : (s) -> new NativeBuffer s, 'utf8'
+
   push_buffer : (b) ->
     if b.length > @_small_buf_sz
       @_push_sub_buffer b
@@ -144,10 +148,6 @@ exports.PpBuffer = class PpBuffer
 
   #-----------------------------------------
 
-  _prepare_encoding : () -> @freeze()
-
-  #-----------------------------------------
-
   _get : (i) -> if i < @_tot then @_frozen_buf.readUInt8(i) else 0
 
   #-----------------------------------------
@@ -180,16 +180,20 @@ exports.PpBuffer = class PpBuffer
     @_cp += 4
     return ret
 
-  read_byte_array : (n) ->
+  #-----------------------------------------
+
+  read_buffer : (n) ->
     bl = @bytes_left()
     if n > bl
-      @hit_error "Corruption: asked for #{n} bytes, but only #{bl} available"
       n = bl
+      throw new Error "Corruption: asked for #{n} bytes, but only #{bl} available"
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]
     @_cp = e
     return ret
-  read_utf8_string : (n) ->
-    @read_byte_array(n).toString 'utf8'
 
+  #-----------------------------------------
 
+  @isBuffer : (b) -> return NativeBuffer.isBuffer b
+
+##=======================================================================

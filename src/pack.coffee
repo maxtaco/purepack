@@ -57,22 +57,21 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  output : (enc) ->
-    @_buffer.toString enc
+  output : () -> @_buffer.freeze()
   
   #-----------------------------------------
 
   p : (o) ->
     switch typeof o
       when 'number'                           then @p_number o
-      when 'string'                           then @p_utf8_string o
+      when 'string'                           then @p_str o
       when 'boolean'                          then @p_boolean o
       when 'undefined'                        then @p_null()
       when 'object'
         if not o?                             then @p_null()
         else if is_array o                    then @p_array o
-        else if (ba = PpBuffer.to_byte_array o) then @p_byte_array ba
-        else                                       @p_obj o
+        else if PpBuffer.isBuffer o           then @p_bin o
+        else if not @p_ext(o)                 then @p_obj o
 
   #-----------------------------------------
 
@@ -174,29 +173,35 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
-  p_byte_array : (b) ->
-    if @_opts.byte_arrays
-      @p_uint8 C.byte_array
-    else
-      b = PpBuffer.ui8a_to_binary b    
-    @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
-    @_buffer.push_buffer b
-
-  p_utf8_string : (b) ->
-    # Given a string, the first thing we do is convert it to a UTF-8 sequence
-    # of raw bytes in a byte array.  The character '\x8a' will be converted
-    # to "\xc2\x8a".  We then encoding this string.  We need to do this conversion
-    # outside the buffer class since we need to know the string length to encode
-    # up here.
-    b = PpBuffer.utf8_to_ui8a b
-    @p_len b.length, C.fix_raw_min, C.fix_raw_max, C.raw16, C.raw32
+  p_buffer : (b) ->
     @_buffer.push_buffer b
 
   #-----------------------------------------
 
-  p_len : (l, smin, smax, m, b) ->
-    if l <= (smax - smin)
-      @p_uint8 (l|smin)
+  p_bin : (r) ->
+    @p_len r.length, null, null, C.bin16, C.bin32, C.bin8
+    @p_buffer r
+
+  #-----------------------------------------
+
+  p_str : (s) ->
+    # Given a string, the first thing we do is convert it to a UTF-8 sequence
+    # of raw bytes in a byte array.  The character '\x8a' will be converted
+    # to "\xc2\x8a".  We then encode this string.  We need to do this conversion
+    # outside the buffer class since we need to know the string length to encode
+    # up here.
+    b = @_buffer.prepare_utf8 s
+    @p_len b.length, C.fix_str_min, C.fix_str_max, C.str16, C.str32, C.str8
+    @p_buffer b
+
+  #-----------------------------------------
+
+  p_len : (l, fixmin, fixmax, m, b, s = null) ->
+    if fixmin? and fixmax? and l <= (fixmax - fixmin)
+      @p_uint8 (l|fixmin)
+    else if s? and l <= 0xff
+      @p_uint8 s
+      @p_uint8 l
     else if l <= 0xffff
       @p_uint8 m
       @p_uint16 l
@@ -206,13 +211,40 @@ exports.Packer = class Packer
 
   #-----------------------------------------
 
+  p_ext : (o) ->
+    if not @_opts.ext? then false
+    else if not (ret = @_opts.ext o) then false
+    else
+      [type,buf] = ret
+      switch (l = buf.length)
+        when 1  then @p_uint8 C.fix_ext1
+        when 2  then @p_uint8 C.fix_ext2
+        when 4  then @p_uint8 C.fix_ext4
+        when 8  then @p_uint8 C.fix_ext8
+        when 16 then @p_uint8 C.fix_ext16
+        else
+          if l <= 0xff
+            @p_uint8 C.ext8
+            @p_uint8 l
+          else if l <= 0xffff
+            @p_uint8 C.ext16
+            @p_uint16 l
+          else
+            @p_uint8 C.ext32
+            @p_uint32 l
+      @p_uint8 type
+      @p_buffer buf
+      true
+
 ##=======================================================================
 
 # Opts can be:
-#   - byte_arrays - encode 0xc4 byte arrays
 #   - floats      - use floats, not double in encodings...
-exports.pack = (x, enc, opts = {} ) ->
+#   - sort_keys   - sort keys when outputting objects (for hash comparisons esp.)
+#   - ext         - an "extensible hook" which returns [type,buf] on an object if it's
+#                   to be encoded as an extensible object, and null if it's not
+exports.pack = (x, opts = {} ) ->
   packer = new Packer opts
   packer.p x
-  packer.output enc
+  packer.output()
   

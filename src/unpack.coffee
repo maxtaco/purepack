@@ -12,22 +12,32 @@ modes =
 
 ##=======================================================================
 
+default_ext = (type, raw) -> { type, raw }
+
+##=======================================================================
+
 exports.Unpacker = class Unpacker
 
-  constructor : ()  ->
-    @_buffer = null
+  constructor : (b, @_opts = {})  ->
+    @_buffer = new PpBuffer b
+    @_ext = @_opts.ext or (if @_opts.no_ext then null else default_ext)
     
   #-----------------------------------------
-  
-  decode : (s, enc) -> return !! (@_buffer = PpBuffer.decode s, enc)
 
-  #-----------------------------------------
-
-  u_bytes : (n, mode) ->
-    if mode is modes.BINARY then @_buffer.read_byte_array n
-    else @_buffer.read_utf8_string n
+  u_buf : (n) -> @_buffer.read_buffer n
+  u_str : (n) -> @u_buf(n).toString('utf8')
+  u_bin : (n) -> @u_buf(n)
    
   #-----------------------------------------
+
+  u_ext : (n) ->
+    typ = @u_uint8()
+    buf = @u_buf n
+    if @_opts.ext? then @_opts.ext(typ,buf)
+    else throw new Error "No ext hook but got message type: #{typ}"
+
+  #-----------------------------------------
+
 
   get_errors : () -> @_buffer.get_errors()
    
@@ -83,14 +93,7 @@ exports.Unpacker = class Unpacker
     
   #-----------------------------------------
 
-  error : (e) ->
-    @_buffer.hit_error e
-    null
-   
-  #-----------------------------------------
-
-  u_inner : (last_mode) ->
-    mode = modes.NONE
+  u : () ->
     b = @_buffer.read_uint8()
     ret = if b <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
@@ -104,9 +107,6 @@ exports.Unpacker = class Unpacker
     else if b >= C.fix_map_min and b <= C.fix_map_max
       l = (b & C.fix_map_count_mask)
       @u_map l
-    else if b is C.byte_array
-      mode = modes.BINARY
-      null
     else
       switch b
         when C.null  then null
@@ -122,34 +122,37 @@ exports.Unpacker = class Unpacker
         when C.int64 then @u_int64()
         when C.double then @u_double()
         when C.float then @u_float()
-        when C.raw16 then @u_bytes @u_uint16(), last_mode
-        when C.raw32 then @u_bytes @u_uint32(), last_mode
+        when C.str8 then @u_str @u_uint8()
+        when C.str16 then @u_str @u_uint16()
+        when C.str32 then @u_str @u_uint32()
+        when C.bin8 then @u_bin @u_uint8()
+        when C.bin16 then @u_bin @u_uint16()
+        when C.bin32 then @u_bin @u_uint32()
         when C.array16 then @u_array @u_uint16()
         when C.array32 then @u_array @u_uint32()
         when C.map16 then @u_map @u_uint16()
         when C.map32 then @u_map @u_uint32()
+        when C.fix_ext1 then @u_ext 1
+        when C.fix_ext2 then @u_ext 2
+        when C.fix_ext4 then @u_ext 4
+        when C.fix_ext8 then @u_ext 8
+        when C.fix_ext16 then @u_ext 16
+        when C.ext8 then @u_ext @u_uint8()
+        when C.ext16 then @u_ext @u_uint16()
+        when C.ext32 then @u_ext @u_uint32()
         else @error "unhandled type #{b}"
     [ mode , ret ]
 
-  #-----------------------------------------
-
-  u : () ->
-    mode = modes.START
-    while mode isnt modes.NONE
-      [ mode, ret ] = @u_inner mode
-    ret
-      
 ##=======================================================================
 
-exports.unpack = (x, enc) ->
-  unpacker = new Unpacker
-  err = null
-  res = null
-  if (unpacker.decode x, enc)
-    res = unpacker.u()
-    err = unpacker.get_errors()
-  else
-    err = new Error "Decoding type '#{enc}' failed"
-  return [ err, res ]
+# @param {Buffer} x The buffer to decode
+# @option opts {function} ext An 'extensible' encode function. Given a [type,buf]
+#   pair, should return an object or throw an error.
+# @option opts {bool} no_ext A flag to turn off the default extensible encoder
+#   and just throw an error if we encounter an extensible object in the stream
+# 
+exports.unpack = (x, opts = {}) ->
+  unpacker = new Unpacker x, opts
+  unpacker.u()
     
 ##=======================================================================
