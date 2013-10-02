@@ -38,11 +38,6 @@ exports.Unpacker = class Unpacker
 
   #-----------------------------------------
 
-
-  get_errors : () -> @_buffer.get_errors()
-   
-  #-----------------------------------------
-
   u_array : (n) -> (@u() for i in [0...n])
    
   #-----------------------------------------
@@ -94,13 +89,12 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u : () ->
-    b = @_buffer.read_uint8()
-    ret = if b <= C.positive_fix_max then b
+    if (b = @u_uint8()) <= C.positive_fix_max then b
     else if b >= C.negative_fix_min and b <= C.negative_fix_max
       twos_compl_inv b, 8
-    else if b >= C.fix_raw_min and b <= C.fix_raw_max
-      l = (b & C.fix_raw_count_mask)
-      @u_bytes l, last_mode
+    else if b >= C.fix_str_min and b <= C.fix_str_max
+      l = (b & C.fix_str_count_mask)
+      @u_str l
     else if b >= C.fix_array_min and b <= C.fix_array_max
       l = (b & C.fix_array_count_mask)
       @u_array l
@@ -140,8 +134,7 @@ exports.Unpacker = class Unpacker
         when C.ext8 then @u_ext @u_uint8()
         when C.ext16 then @u_ext @u_uint16()
         when C.ext32 then @u_ext @u_uint32()
-        else @error "unhandled type #{b}"
-    [ mode , ret ]
+        else throw new Error "unhandled type #{b}"
 
 ##=======================================================================
 

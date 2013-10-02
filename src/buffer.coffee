@@ -1,5 +1,4 @@
 
-base = require('./base')
 {twos_compl_inv} = require './util'
 
 ##=======================================================================
@@ -13,7 +12,7 @@ exports.PpBuffer = class PpBuffer
   #-----------------------------------------
 
   constructor : (buf) ->
-    if buf?
+    if not buf?
       @_frozen_buf = null
       @_sub_buffers = []
       @_limits = []
@@ -42,6 +41,7 @@ exports.PpBuffer = class PpBuffer
   #-----------------------------------------
 
   _push_sub_buffer : (b) ->
+    console.log "psb #{@_sub_buffers.length}"
     @_finish_sub_buffer() if @_sub_buffers.length
     @_lib = () -> b.length - @_i
     @_sub_buffers.push b
@@ -49,19 +49,25 @@ exports.PpBuffer = class PpBuffer
 
   #-----------------------------------------
 
-  _make_room : () -> @_push_sub_buffer new NativeBuffer @_sz
+  _make_room : () -> 
+    console.log "making room #{@_sz}"
+    @_push_sub_buffer new NativeBuffer @_sz
   _make_room_for_n_bytes : (n) -> @_make_room() if @_lib() < n
 
   #-----------------------------------------
   
   push_uint8 : (b) ->
-    throw new Error "Cannot push anymore into this buffer" if @_no_push
-    buf = if @_lib() is 0 then @_make_room() else @_ab()
-    buf.writeUInt8 b, @_i++
-    @_tot++
-
-  push_int8 : (b) -> @push_uint8 b
-
+    n = 1
+    @_make_room_for_n_bytes n
+    @_ab().writeUInt8 b, @_i
+    @_i += n
+    @_tot += n
+  push_int8 : (b) ->
+    n = 1
+    @_make_room_for_n_bytes n
+    @_ab().writeInt8 b, @_i
+    @_i += n
+    @_tot += n
   push_uint16 : (s) -> 
     n = 2
     @_make_room_for_n_bytes n
@@ -144,7 +150,12 @@ exports.PpBuffer = class PpBuffer
     @_frozen_buf = b
     @_tot = b.length
     @_sub_buffers = []
+    @_cp = 0
     @
+
+  #-----------------------------------------
+
+  bytes_left : () -> @_tot - @_cp
 
   #-----------------------------------------
 

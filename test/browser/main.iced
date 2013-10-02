@@ -1,7 +1,5 @@
 
 mods = 
-  encode : require '../files/encode.iced'
-  extensions : require '../files/extensions.iced'
   unpack : require '../files/unpack.iced'
   pack   : require '../files/pack.iced'
 

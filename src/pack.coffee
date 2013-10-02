@@ -120,6 +120,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   p_array : (a) ->
+    console.log a.length
     @p_len a.length, C.fix_array_min, C.fix_array_max, C.array16, C.array32
     @p e for e in a
    

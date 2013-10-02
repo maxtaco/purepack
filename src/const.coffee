@@ -38,7 +38,7 @@ exports.C =
 	fix_map_max          : 0x8f
 	fix_array_count_mask : 0xf
 	fix_map_count_mask   : 0xf
-	fix_raw_count_mask   : 0x1f
+	fix_str_count_mask   : 0x1f
 	negative_fix_min     : 0xe0
 	negative_fix_max     : 0xff
 	negative_fix_mask    : 0x1f
