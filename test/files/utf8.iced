@@ -2,12 +2,10 @@ mpack = require 'msgpack'
 purepack = require '../../lib/main'
 
 compare = (T, obj, nm) -> 
-  enc = "base64"
-  packed = purepack.pack obj, enc
-  mpacked = mpack.pack(obj).toString('base64') 
-  T.equal packed, mpacked
-  [err, unpacked] = purepack.unpack packed, enc
-  T.assert (not err?)
+  packed = purepack.pack obj
+  mpacked = mpack.pack(obj)
+  T.equal packed.toString('base64'), mpacked.toString('base64')
+  unpacked = purepack.unpack packed
   T.equal obj, unpacked, nm
 
 exports.random_binary = (T,cb)->

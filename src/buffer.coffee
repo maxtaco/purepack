@@ -23,6 +23,7 @@ exports.PpBuffer = class PpBuffer
 
       @_logsz = 10
       @_i = 0
+      @_tot = 0
     else
       @_freeze_to buf
 
@@ -41,7 +42,6 @@ exports.PpBuffer = class PpBuffer
   #-----------------------------------------
 
   _push_sub_buffer : (b) ->
-    console.log "psb #{@_sub_buffers.length}"
     @_finish_sub_buffer() if @_sub_buffers.length
     @_lib = () -> b.length - @_i
     @_sub_buffers.push b
@@ -49,9 +49,7 @@ exports.PpBuffer = class PpBuffer
 
   #-----------------------------------------
 
-  _make_room : () -> 
-    console.log "making room #{@_sz}"
-    @_push_sub_buffer new NativeBuffer @_sz
+  _make_room : () -> @_push_sub_buffer new NativeBuffer @_sz
   _make_room_for_n_bytes : (n) -> @_make_room() if @_lib() < n
 
   #-----------------------------------------
@@ -196,7 +194,6 @@ exports.PpBuffer = class PpBuffer
   read_buffer : (n) ->
     bl = @bytes_left()
     if n > bl
-      n = bl
       throw new Error "Corruption: asked for #{n} bytes, but only #{bl} available"
     e = @_cp + n
     ret = @_frozen_buf[@_cp...e]

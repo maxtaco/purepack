@@ -1,10 +1,8 @@
 purepack = require '../../lib/main'
 
 compare = (T, obj, nm) -> 
-  enc = "base64"
-  packed = purepack.pack obj, enc
-  [err, unpacked] = purepack.unpack packed, enc
-  T.assert (not err?)
+  packed = purepack.pack obj
+  unpacked = purepack.unpack packed
   T.equal obj, unpacked, nm
 
 exports.unpack1 = (T, cb) ->
@@ -84,7 +82,7 @@ exports.unpack9 = (T,cb)->
   cb()
 
 exports.corrupt1 = (T,cb) ->
-  x = new Uint8Array([135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97, 
+  x = new Buffer ([135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97, 
                       120, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 165, 110, 111, 
                       116, 101, 115, 219, 0, 77, 110, 111, 116, 32, 97, 99, 116, 105, 118, 
                       101, 32, 121, 101, 116, 44, 32, 115, 116, 105, 108, 108, 32, 117, 115, 
@@ -96,25 +94,23 @@ exports.corrupt1 = (T,cb) ->
                       12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8, 
                       171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101, 
                       110, 101, 114, 97, 116, 105, 111, 110, 1])
-  [ err, res ] = purepack.unpack x, 'ui8a'
+  res = err = null
+  try
+    res = purepack.unpack x, 'ui8a'
+  catch e
+    err = e 
   T.assert err?, "error was found"
-  T.assert (res.email is 'themax@gmail.com'), "found email"
-  rxx = "Error: in purepack decoding: (\.*)"
-  m = err.toString().match rxx
+  m = err.toString()
   if m?
-    ep = m[1].split "; "
-    T.equal ep[0], "Corruption: asked for 5074543 bytes, but only 137 available"
-    if purepack.Buffer.type() is 'browser'
-      T.equal ep[1], "Invalid UTF-8 sequence"
+    T.equal m, "Error: Corruption: asked for 5074543 bytes, but only 137 available"
   else
     T.error "Failed to get expected text in Error message"
   cb()
 
 exports.floats = (T,cb) ->
   obj = [ 1.2222, -10.10, 200.200, -3333.333, -5000000, 50000000 ]
-  enc = "base64"
-  packed = purepack.pack obj, enc, floats : true
-  [err, unpacked] = purepack.unpack packed, enc
+  packed = purepack.pack obj, { floats : true }
+  unpacked = purepack.unpack packed
   T.assert( (not err?), "packing of floats worked..." )
   for val,i in obj
     T.assert((Math.abs(val - unpacked[i]) < .0001), "float-#{i} (#{val})")

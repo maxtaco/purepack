@@ -13,9 +13,9 @@ exports.sort1 = (T,cb) ->
     echo : 7
     yankee : 8
     golf : 9
-  packed = purepack.pack obj, enc, { sort_keys : true }
-  [err, unpacked] = purepack.unpack packed, enc
-  console.log packed
+  packed = purepack.pack obj, { sort_keys : true }
+  unpacked = purepack.unpack packed
   T.assert (not err?)
   T.equal obj, unpacked, "sorting packs/unpacks"
+  cb()
 
