@@ -28,5 +28,23 @@ make_test = (k,v) -> (T,cb) ->
   bufeq T, rem, r, "random was right"
   cb()
 
+#=========================================================================
+
 for k,v of tests when not v.difficult
   exports[k] = make_test k, v
+
+#=========================================================================
+
+exports.test_bad_frames = (T,cb) ->
+  obj = { a : "dog", b : [0...1000] }
+  framed = purepack.frame.pack obj, {}
+  for i in [0...200]
+    try
+      [ret,rem] = purepack.frame.unpack framed[0...i]
+      T.assert false, "trunc at byte #{i}" 
+    catch error
+      # good!
+  cb()
+  
+#=========================================================================
+
