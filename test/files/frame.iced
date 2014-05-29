@@ -1,11 +1,10 @@
 purepack = require '../../lib/main'
 {tests} = require '../pack/data.js'
-{prng} = require 'crypto'
 
 eq = (T,a,b,s) ->
   if a? or b? then T.equal(a,b,s)
 
-random_n = (n) -> prng(4).readUInt32BE(0) % n
+random_n = (n) -> Math.floor(Math.random() * n)
 
 randobuf = () ->
   len = random_n(100)
