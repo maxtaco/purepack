@@ -38,7 +38,7 @@ exports.unpack = (x, opts = {}) ->
   rem = x[plen...]
   x = x[0...plen]
   ret = unpack x
-  return {ret, rem}
+  return [ret, rem]
 
 #---------------------------------------------------------------
 
