@@ -1,6 +1,6 @@
 purepack = require '../../lib/main'
 
-compare = (T, obj, nm) -> 
+compare = (T, obj, nm) ->
   packed = purepack.pack obj
   unpacked = purepack.unpack packed
   T.equal obj, unpacked, nm
@@ -12,7 +12,7 @@ exports.unpack1 = (T, cb) ->
 exports.unpack2 = (T, cb) ->
   compare T, { hi : "mom", bye : "dad" }, "unpack2"
   cb()
-  
+
 exports.unpack3 = (T, cb) ->
   compare T, -100, "unpack3 test 0"
   compare T, -32800, "unpack3 test 0b"
@@ -25,14 +25,14 @@ exports.unpack3 = (T, cb) ->
   compare T, [0xfffffff0...0x10000000f], "unpack3 test 7"
   compare T, -2147483649, "unpack 3 test 8"
   cb()
-  
+
 exports.unpack4 = (T, cb) ->
   compare T, [ 1.1, 10.1, 20.333, 44.44444, 5.555555], "various floats"
   compare T, [ -1.1, -10.1, -20.333, -44.44444, -5.555555], "various neg floats"
   cb()
 
 exports.unpack5 = (T, cb) ->
-  
+
   obj =
     foo : [0..10]
     bar :
@@ -70,7 +70,7 @@ exports.unpack8 = (T,cb) ->
   cb()
 
 exports.unpack9 = (T,cb)->
-  obj = 
+  obj =
     email : "themax@gmail.com"
     notes : "not active yet, still using old medium security. update this note when fixed."
     algo_version : 3,
@@ -82,23 +82,23 @@ exports.unpack9 = (T,cb)->
   cb()
 
 exports.corrupt1 = (T,cb) ->
-  x = new Buffer (new Uint8Array [135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97, 
-                      120, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 165, 110, 111, 
-                      116, 101, 115, 219, 0, 77, 110, 111, 116, 32, 97, 99, 116, 105, 118, 
-                      101, 32, 121, 101, 116, 44, 32, 115, 116, 105, 108, 108, 32, 117, 115, 
-                      105, 110, 103, 32, 111, 108, 100, 32, 109, 101, 100, 105, 117, 109, 
-                      32, 115, 101, 99, 117, 114, 105, 116, 121, 46, 32, 117, 112, 100, 97, 
-                      116, 101, 32, 116, 104, 105, 115, 32, 110, 111, 116, 101, 32, 119, 104, 
-                      101, 110, 32, 102, 105, 120, 101, 100, 46, 172, 97, 108, 103, 111, 95, 
-                      118, 101, 114, 115, 105, 111, 110, 3, 166, 108, 101, 110, 103, 116, 104, 
-                      12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8, 
-                      171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101, 
+  x = new Buffer (new Uint8Array [135, 165, 101, 109, 97, 105, 108, 176, 116, 104, 101, 109, 97,
+                      120, 64, 103, 109, 97, 105, 108, 46, 99, 111, 109, 165, 110, 111,
+                      116, 101, 115, 219, 0, 77, 110, 111, 116, 32, 97, 99, 116, 105, 118,
+                      101, 32, 121, 101, 116, 44, 32, 115, 116, 105, 108, 108, 32, 117, 115,
+                      105, 110, 103, 32, 111, 108, 100, 32, 109, 101, 100, 105, 117, 109,
+                      32, 115, 101, 99, 117, 114, 105, 116, 121, 46, 32, 117, 112, 100, 97,
+                      116, 101, 32, 116, 104, 105, 115, 32, 110, 111, 116, 101, 32, 119, 104,
+                      101, 110, 32, 102, 105, 120, 101, 100, 46, 172, 97, 108, 103, 111, 95,
+                      118, 101, 114, 115, 105, 111, 110, 3, 166, 108, 101, 110, 103, 116, 104,
+                      12, 173, 115, 101, 99, 117, 114, 105, 116, 121, 95, 98, 105, 116, 115, 8,
+                      171, 110, 117, 109, 95, 115, 121, 109, 98, 111, 108, 115, 0, 170, 103, 101,
                       110, 101, 114, 97, 116, 105, 111, 110, 1])
   res = err = null
   try
     res = purepack.unpack x, 'ui8a'
   catch e
-    err = e 
+    err = e
   T.assert err?, "error was found"
   m = err.toString()
   if m?
@@ -115,4 +115,19 @@ exports.floats = (T,cb) ->
   for val,i in obj
     T.assert((Math.abs(val - unpacked[i]) < .0001), "float-#{i} (#{val})")
   cb()
+
+exports.corrupt2 = (T,cb) ->
+  bufs = [
+    (new Buffer "863921940343f3ddbde3bf7c00d0faeb9e7aeb9e", "hex")
+    (new Buffer "jhljhlkjhjkhl) AND 8929=4798 AND (6655=6655", "base64")
+  ]
+  for b,i in bufs
+    err = null
+    try
+      p = purepack.unpack b
+    catch e
+      err = e
+    T.assert err?, "we got an error for reading off the array (attempt #{i})"
+  cb()
+
 

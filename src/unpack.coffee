@@ -5,7 +5,7 @@
 
 ##=======================================================================a
 
-modes = 
+modes =
   NONE : 0
   BINARY : 1
   START : 2
@@ -21,13 +21,13 @@ exports.Unpacker = class Unpacker
   constructor : (b, @_opts = {})  ->
     @_buffer = new PpBuffer b
     @_ext = @_opts.ext or (if @_opts.no_ext then null else default_ext)
-    
+
   #-----------------------------------------
 
   u_buf : (n) -> @_buffer.read_buffer n
   u_str : (n) -> @u_buf(n).toString('utf8')
   u_bin : (n) -> @u_buf(n)
-   
+
   #-----------------------------------------
 
   u_ext : (n) ->
@@ -39,7 +39,7 @@ exports.Unpacker = class Unpacker
   #-----------------------------------------
 
   u_array : (n) -> (@u() for i in [0...n])
-   
+
   #-----------------------------------------
 
   u_map : (n) ->
@@ -47,7 +47,7 @@ exports.Unpacker = class Unpacker
     for i in [0...n]
       ret[@u()] = @u()
     return ret
-     
+
   #-----------------------------------------
 
   u_uint8  : () -> @_buffer.read_uint8()
@@ -62,7 +62,7 @@ exports.Unpacker = class Unpacker
 
   u_double : () -> @_buffer.read_float64()
   u_float  : () -> @_buffer.read_float32()
-    
+
   #-----------------------------------------
 
   # This is, as usual, a bit subtle.  Here is what we get:
@@ -81,11 +81,11 @@ exports.Unpacker = class Unpacker
   #
   # And this is good enough, since (a - 2^32) is going to have a small
   # absolute value, for small values of a.
-  # 
+  #
   u_int64 : () ->
     [a,b] = (@u_uint32() for i in [0...2])
     U32MAX*(a - U32MAX) + b
-    
+
   #-----------------------------------------
 
   u : () ->
@@ -143,9 +143,9 @@ exports.Unpacker = class Unpacker
 #   pair, should return an object or throw an error.
 # @option opts {bool} no_ext A flag to turn off the default extensible encoder
 #   and just throw an error if we encounter an extensible object in the stream
-# 
+#
 exports.unpack = (x, opts = {}) ->
   unpacker = new Unpacker x, opts
   unpacker.u()
-    
+
 ##=======================================================================

@@ -53,7 +53,7 @@ exports.PpBuffer = class PpBuffer
   _make_room_for_n_bytes : (n) -> @_make_room() if @_lib() < n
 
   #-----------------------------------------
-  
+
   push_uint8 : (b) ->
     n = 1
     @_make_room_for_n_bytes n
@@ -66,7 +66,7 @@ exports.PpBuffer = class PpBuffer
     @_ab().writeInt8 b, @_i
     @_i += n
     @_tot += n
-  push_uint16 : (s) -> 
+  push_uint16 : (s) ->
     n = 2
     @_make_room_for_n_bytes n
     @_ab().writeUInt16BE s, @_i
@@ -78,7 +78,7 @@ exports.PpBuffer = class PpBuffer
     @_ab().writeUInt32BE w, @_i
     @_i += n
     @_tot += n
-  push_int16 : (s) -> 
+  push_int16 : (s) ->
     n = 2
     @_make_room_for_n_bytes n
     @_ab().writeInt16BE s, @_i
@@ -134,7 +134,7 @@ exports.PpBuffer = class PpBuffer
       @_finish_sub_buffer()
       lst = []
       for b,i in @_sub_buffers
-        if (l = @_limits[i]) is b.length 
+        if (l = @_limits[i]) is b.length
           lst.push b
         else if l > 0
           lst.push b[0...l]
@@ -157,7 +157,9 @@ exports.PpBuffer = class PpBuffer
 
   #-----------------------------------------
 
-  _get : (i) -> if i < @_tot then @_frozen_buf.readUInt8(i) else 0
+  _get : (i) ->
+    if i < @_tot then @_frozen_buf.readUInt8(i)
+    else throw new Error "read off end of buffer"
 
   #-----------------------------------------
 
