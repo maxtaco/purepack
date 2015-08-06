@@ -19,14 +19,15 @@
   },
   "devDependencies": {
     "browserify": "*",
-    "icsify": "*",
-    "iced-utils": "*",
-    "iced-test": "*",
-    "iced-coffee-script": "*",
     "colors": "*",
     "deep-equal": "*",
-    "optimist": "*",
-    "msgpack": "*"
+    "iced-coffee-script": "*",
+    "iced-runtime": "^1.0.2",
+    "iced-test": "*",
+    "iced-utils": "*",
+    "icsify": "*",
+    "msgpack": "*",
+    "optimist": "*"
   },
   "licenses": [
     {
