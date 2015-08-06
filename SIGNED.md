@@ -3,13 +3,13 @@
 -----BEGIN PGP SIGNATURE-----
 Comment: GPGTools - https://gpgtools.org
 
-iQEcBAABCgAGBQJVw7jXAAoJEJgKPw0B/gTfPnUH/R/fSW62Gg1btCOqEWKESyMG
-MKGGm0HCsERPDJqSdqpxjAl2aYFZ4CmRa/BaLSXCIj8+SGgsAe4kllG1qOdO0Z7H
-Z7N75waISP+pPqrKtQPvH1k8thgrzsQ8cpluuQGR+ucCtZptgHaQZV63AFGSMg9j
-wot7LCsAhJcdbzQfZ3OQbujqC/45qwfWRcHxLEtmZvvfmWVWGNLentF7680wLig2
-Aeh6L5u8pBf71n8XFYpUjDddB7+nkE+VDK6Q84ZeewqDFEFN2w8B3n/cBMGsZrD4
-uq7KE2mlkMkzCcZqsAb9/jljcz+5YM5CT8iVXE/GavAin7DFqWOwQ+97cePbDc4=
-=8m0b
+iQEcBAABCgAGBQJVw7sBAAoJEJgKPw0B/gTfgQwIAIA90OciS7/WqRHSvljW3PR+
+xzvxYUzcucmnP71FAnmSkRLcQTyiX0/QawuKLKpP2E3i7ER/4UagNvgEF++q3LJ9
+qY9AfSRI4rWoIKYdDtbKXjmB9zB/IbtYnfv5kksbz3OzDUTVxxnE1XD4VhG+k0iw
+htUZmlbf4uGIUimUHSRp0g3Qh1QsvRoDhMHE0KHvNnJGk1TEQ9LPkei7w7arMTOi
+AQM8N8rcJiKSR/rq9f9b3Wm3SNi5Cnxihthm/HC7adCpqgTXYmgC8WyT9Vgxei7a
+ziln2J7TF8smR6Sh0HeAxIp2K/u0hNZIeH8CkQuLzAdXbqvFmPlvWq0DWCVpSRc=
+=oTXu
 -----END PGP SIGNATURE-----
 
 ```
@@ -25,7 +25,7 @@ size   exec  file                 contents
              ./                                                                                   
 140            .gitignore         33573b523e3d969c68baef03100ce1e6e07d69735443d39b41bc7504df6dcf5f
 38             .travis.yml        e36b9b52fccb8114b8b8b13bdfbaa87342b07bda069b517ca34db9f85adaa3e3
-94             CHANGELOG.md       b7c0b110cd9731e848e613041f2f1dbe860c095f2e01641b13c643b806b85d0c
+161            CHANGELOG.md       6a0b57ac245a1de9791fa11f8fd3a5f3213ff25c073ec5f239b9f0a0c799b8a0
 907            Makefile           4339d43218088c5087fdc43c5b8dcb50112e067484bc7ba6faee959dd9e5258c
 1753           README.md          0c5c44d85d1e2e945168b611499ef28346f0ee79792e26c4d4e9c4ce9ba5b08c
                bench/                                                                             
@@ -43,7 +43,7 @@ size   exec  file                 contents
 7168             pack.js          afc5365a4eaaee1e99abe11ca4d077557d80dc11c774b090736bb84a89d1096b
 5992             unpack.js        72eb6bb8bb12d5597f0f82504631eecf48be11067f7a5742cadf3bb50ea18a95
 614              util.js          d93102f28abc76bc2f566e31a943c1576c11f5a68c896cbe5a8556680c222e02
-3601           package.json       41af833689f0d5bcca0875d59391ac11b602c0e2aaf2bfb055b6b61d9939c762
+3631           package.json       17e0e9c21ef4853d7c94b483488684d6b64d6fe764711d45461fb15ead978733
                src/                                                                               
 4773             buffer.coffee    64338218bf19a5aef9b49993938aee4bbc7234a5686712f1e2699f49098d3898
 1402             const.coffee     5b5274ad7699100545af000185ff87ddd68d0c01f760f74761c7bd8c2082fbc5

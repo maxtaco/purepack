@@ -1,6 +1,6 @@
 {
   "name": "purepack",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A browserify, Pure JS implementation of msgpack spec v5",
   "homepage": "https://github.com/maxtaco/purepack",
   "main": "lib/main",
