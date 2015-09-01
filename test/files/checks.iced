@@ -111,7 +111,7 @@ exports.strict_check_understuffed_string = (T,cb) ->
     res = purepack.unpack n, { strict : true }
   catch e
     err = e
-  T.assert err?, "understuffed array failure in strict mode"
+  T.assert err?, "understuffed string failure in strict mode"
   T.equal err.message, "encoding size mismatch: wanted 5 but got 6"
 
   # the 16-bit fixed case
@@ -121,7 +121,7 @@ exports.strict_check_understuffed_string = (T,cb) ->
     res = purepack.unpack n, { strict : true }
   catch e
     err = e
-  T.assert err?, "understuffed array failure in strict mode"
+  T.assert err?, "understuffed string failure in strict mode"
   T.equal err.message, "encoding size mismatch: wanted 5 but got 7"
 
   # the 32-bit fixed case
@@ -131,9 +131,52 @@ exports.strict_check_understuffed_string = (T,cb) ->
     res = purepack.unpack n, { strict : true }
   catch e
     err = e
-  T.assert err?, "understuffed array failure in strict mode"
+  T.assert err?, "understuffed string failure in strict mode"
   T.equal err.message, "encoding size mismatch: wanted 5 but got 9"
 
   cb()
 
+exports.strict_check_understuffed_int = (T,cb) ->
 
+  # Test 14 encoded with understuffing a few different ways..
+
+  # the 8-bit fixed case
+  n = new Buffer [0xcc, 0x0d ]
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed int failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 1 but got 2"
+
+  # the 16-bit fixed case
+  n = new Buffer [ 0xcd, 0x00, 0x0d ]
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed int failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 1 but got 3"
+
+  # the 32-bit fixed case
+  n = new Buffer [ 0xce, 0x00, 0x00, 0x00, 0x0d ]
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed int failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 1 but got 5"
+
+  # the 64-bit fixed case
+  n = new Buffer [ 0xce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d ]
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed int failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 1 but got 9"
+  cb()
