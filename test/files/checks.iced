@@ -100,4 +100,40 @@ exports.strict_check_understuffed_array = (T,cb) ->
 
   cb()
 
+exports.strict_check_understuffed_string = (T,cb) ->
+
+  # Test "abcd" encoded with understuffing a few different ways..
+
+  # the 8-bit fixed case
+  n = new Buffer([0xd9, 0x04, 0x61, 0x62, 0x63, 0x64 ])
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed array failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 5 but got 6"
+
+  # the 16-bit fixed case
+  n = new Buffer([0xda, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ])
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed array failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 5 but got 7"
+
+  # the 32-bit fixed case
+  n = new Buffer([0xdb, 0x0, 0x0, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ])
+  res = err = null
+  try
+    res = purepack.unpack n, { strict : true }
+  catch e
+    err = e
+  T.assert err?, "understuffed array failure in strict mode"
+  T.equal err.message, "encoding size mismatch: wanted 5 but got 9"
+
+  cb()
+
 
