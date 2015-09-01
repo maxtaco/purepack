@@ -1,3 +1,9 @@
+## 1.0.4 
+
+Features:
+  - Don't allow repeated keys in the same dictionary; throw on unpack in that case
+  - A strict mode in which we throw if you don't encode in exactly the right way.
+
 ## 1.0.3 (2015-08-06)
 
 Bugfix:

@@ -3,7 +3,7 @@
 
 ##=======================================================================
 
-NativeBuffer = Buffer # require('buffer').Buffer
+NativeBuffer = Buffer
 
 ##=======================================================================
 
@@ -205,5 +205,14 @@ exports.PpBuffer = class PpBuffer
   #-----------------------------------------
 
   @isBuffer : (b) -> return NativeBuffer.isBuffer b
+
+##=======================================================================
+
+exports.bufeq = (b1, b2) ->
+  return false unless b1.length is b2.length
+  for i in [0...b1.lenth]
+    if b1.readUInt8(i) isnt b2.readUInt8(i)
+      return false
+  return true
 
 ##=======================================================================

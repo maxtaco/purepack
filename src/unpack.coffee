@@ -1,7 +1,8 @@
 
 {C} = require './const'
-{PpBuffer} = require './buffer'
+{bufeq,PpBuffer} = require './buffer'
 {pow2,twos_compl_inv,U32MAX} = require './util'
+{pack} = require './pack'
 
 ##=======================================================================a
 
@@ -19,6 +20,7 @@ default_ext = (type, raw) -> { type, raw }
 exports.Unpacker = class Unpacker
 
   constructor : (b, @_opts = {})  ->
+    @_orig_buffer = b
     @_buffer = new PpBuffer b
     @_ext = @_opts.ext or (if @_opts.no_ext then null else default_ext)
 
@@ -44,8 +46,16 @@ exports.Unpacker = class Unpacker
 
   u_map : (n) ->
     ret = {}
+    keys = []
     for i in [0...n]
-      ret[@u()] = @u()
+      key = @u()
+      keys.push key
+      throw new Error "duplicate key '#{key}'" if ret[key]?
+      ret[key] = @u()
+    if @_opts.strict
+      for i in [0...keys.length - 1]
+        if keys[i] > keys[i+1]
+          throw new Error "unsorted object keys in strict mode: #{keys[i]} > #{keys[i+1]}"
     return ret
 
   #-----------------------------------------
@@ -136,6 +146,18 @@ exports.Unpacker = class Unpacker
         when C.ext32 then @u_ext @u_uint32()
         else throw new Error "unhandled type #{b}"
 
+  #-----------------------------------------
+
+  unpack : () ->
+    res = @u()
+    if @_opts.strict
+      our_encoding = pack res, { sort_keys : true }
+      if (a = our_encoding.length) isnt (b = @_orig_buffer.length)
+        throw new Error "encoding size mismatch: wanted #{a} but got #{b}"
+      else if not bufeq our_encoding, @_orig_buffer
+        throw new Error "Got non-standard encoding in strict mode"
+    return res
+
 ##=======================================================================
 
 # @param {Buffer} x The buffer to decode
@@ -146,6 +168,6 @@ exports.Unpacker = class Unpacker
 #
 exports.unpack = (x, opts = {}) ->
   unpacker = new Unpacker x, opts
-  unpacker.u()
+  unpacker.unpack()
 
 ##=======================================================================

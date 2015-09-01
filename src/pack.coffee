@@ -20,13 +20,13 @@ is_int = (f) -> Math.floor(f) is f
 #   where x,y are both positive, and both less than 2^32.
 #
 #   Now we can write:
-# 
+#
 #       2^64 - i = 2^64 - 2^32 x - y
 #
 #   Factoring and rearranging:
-# 
+#
 #       2^64 - i = 2^32 * (2^32 - x - 1) + (2^32 - y)
-# 
+#
 #   Thus, we've written:
 #
 #        2^64 - i =  2^32 a + b
@@ -38,14 +38,14 @@ is_int = (f) -> Math.floor(f) is f
 #
 #   And this satisfies our need to put two positive ints into
 #   stream.
-# 
+#
 u64max_minus_i = (i) ->
   x = Math.floor( i / U32MAX)
   y = i % U32MAX
   a = U32MAX - x - (if y > 0 then 1 else 0)
   b = if y is 0 then 0 else U32MAX - y
   return [a, b]
-  
+
 ##=======================================================================
 
 exports.Packer = class Packer
@@ -58,7 +58,7 @@ exports.Packer = class Packer
   #-----------------------------------------
 
   output : () -> @_buffer.freeze()
-  
+
   #-----------------------------------------
 
   p : (o) ->
@@ -89,7 +89,7 @@ exports.Packer = class Packer
     else
       @p_uint8 C.double
       @_buffer.push_float64 d
-   
+
   #-----------------------------------------
 
   p_uint8  : (b) -> @_buffer.push_uint8  b
@@ -103,26 +103,26 @@ exports.Packer = class Packer
 
   #
   # p_neg_int64 -- Pack integer i < -2^31 into a signed quad,
-  #   up until the JS resolution cut-off at least.  
-  # 
-  # 
+  #   up until the JS resolution cut-off at least.
+  #
+  #
   p_neg_int64 : (i) ->
     abs_i = 0 - i
     [a,b] = u64max_minus_i abs_i
     @p_uint32 a
     @p_uint32 b
-   
+
   #-----------------------------------------
 
   p_boolean : (b) -> @p_uint8 if b then C.true else C.false
   p_null :    ()  -> @p_uint8 C.null
-   
+
   #-----------------------------------------
 
   p_array : (a) ->
     @p_len a.length, C.fix_array_min, C.fix_array_max, C.array16, C.array32
     @p e for e in a
-   
+
   #-----------------------------------------
 
   # Serial with keys sorted in-order so that we can use these things
@@ -135,11 +135,11 @@ exports.Packer = class Packer
     for k in keys
       @p k
       @p o[k]
-   
+
   #-----------------------------------------
 
   p_positive_int : (i) ->
-    if i <= 0x7f then @p_uint8 i 
+    if i <= 0x7f then @p_uint8 i
     else if i <= 0xff
       @p_uint8 C.uint8
       @p_uint8 i
@@ -252,4 +252,4 @@ exports.pack = (x, opts = {} ) ->
   packer = new Packer opts
   packer.p x
   packer.output()
-  
+
