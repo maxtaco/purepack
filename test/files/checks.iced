@@ -99,7 +99,7 @@ exports.strict_check_understuffed = (T,cb) ->
       name : "want fix str, got str32"
     }
 
-    # ints
+    # uints
     {
       buf : new Buffer([0xcc, 0x0d ]), # the 8-bit fixed case
       wanted : 1, got : 2,
@@ -132,6 +132,30 @@ exports.strict_check_understuffed = (T,cb) ->
       wanted : 6, got : 9,
       name : "want bin8, got bin32"
     },
+
+    # ints
+    {
+      buf : new Buffer([0xd0, 0xf0 ]), # the 8-bit fixed case
+      wanted : 1, got : 2,
+      name : "want fix int, got int8"
+    },
+    {
+      buf : new Buffer([ 0xd1, 0xff, 0xf0 ]), # the 16-bit fixed case
+      wanted : 1, got : 3,
+      name : "want fix int, got int16"
+    },
+    {
+      buf : new Buffer([ 0xd2, 0xff, 0xff, 0xff, 0xf0 ]), # the 32-bit fixed case
+      wanted : 1, got : 5,
+      name : "want fix int, got int32"
+    },
+    {
+      buf : new Buffer([ 0xd3, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0 ]), # the 64-bit fixed case
+      wanted : 1, got : 9,
+      name : "want fix int, got int64"
+    },
+
+    # binary
 
 
   ]
