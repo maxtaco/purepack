@@ -1,4 +1,4 @@
-## 1.0.4 
+## 1.0.4 (2015-09-02)
 
 Features:
   - Don't allow repeated keys in the same dictionary; throw on unpack in that case

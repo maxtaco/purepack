@@ -4,9 +4,7 @@ mods =
   pack   : require '../files/pack.iced'
   sort   : require '../files/sort.iced'
   frame  : require '../files/frame.iced'
-
-#mods =
-#  "1test" : require '../files/1test.iced'
+  check  : require '../files/checks.iced'
 
 {BrowserRunner} = require('iced-test')
 
