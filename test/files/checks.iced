@@ -44,139 +44,106 @@ exports.strict_check_duplicate_keys_1 = (T,cb) ->
   T.equal err.message, "duplicate key 'key'"
   cb()
 
-exports.strict_check_understuffed_map = (T,cb) ->
-  n = Buffer.concat [
-    new Buffer([0xde, 0x00, 0x01 ]) # A 16-bit-sized buffer, with just 1 item
-    purepack.pack("key"),
-    purepack.pack(2)
-  ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed map failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 6 but got 8"
 
-  n = Buffer.concat [
-    new Buffer([0xdf, 0x00, 0x00, 0x00, 0x01 ]) # A 16-bit-sized buffer, with just 1 item
-    purepack.pack("key"),
-    purepack.pack(2)
-  ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed map failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 6 but got 10"
+exports.strict_check_understuffed = (T,cb) ->
 
+
+  understuffs = [
+
+    # Maps
+    {
+      buf : Buffer.concat([
+        new Buffer([0xde, 0x00, 0x01 ]), # A 16-bit-sized buffer, with just 1 item
+        purepack.pack("key"),
+        purepack.pack(2)
+      ]),
+      wanted : 6, got : 8,
+      name : "want fix map, got map16"
+    },
+    {
+      buf : Buffer.concat([
+        new Buffer([0xdf, 0x00, 0x00, 0x00, 0x01 ]), # A 16-bit-sized buffer, with just 1 item
+        purepack.pack("key"),
+        purepack.pack(2)
+      ]),
+      wanted : 6, got : 10,
+      name : "want fix map, got map32"
+    },
+
+    # arrays
+    {
+      buf : new Buffer([0xdc, 0x00, 0x01, 0x2 ]) # A 16-bit-sized buffer, with just 1 item (the number 2)
+      wanted : 2, got : 4,
+      name : "want fix array, got array16"
+    },
+    {
+      buf : new Buffer([0xdd, 0x00, 0x00, 0x00, 0x01, 0x02 ]) # A 16-bit-sized buffer, with just 1 item
+      wanted : 2, got : 6,
+      name : "want fix array, got array32"
+    },
+
+    # strings
+    {
+      buf : new Buffer([0xd9, 0x04, 0x61, 0x62, 0x63, 0x64 ]), # the 8-bit fixed case
+      wanted : 5, got : 6,
+      name : "want fix str, got str8"
+    },
+    {
+      buf : new Buffer([0xda, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ]), # the 16-bit fixed case
+      wanted : 5, got : 7,
+      name : "want fix str, got str16"
+    },
+    {
+      buf : new Buffer([0xdb, 0x0, 0x0, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ]), # the 32-bit fixed case
+      wanted : 5, got : 9,
+      name : "want fix str, got str32"
+    }
+
+    # ints
+    {
+      buf : new Buffer([0xcc, 0x0d ]), # the 8-bit fixed case
+      wanted : 1, got : 2,
+      name : "want fix int, got uint8"
+    },
+    {
+      buf : new Buffer([ 0xcd, 0x00, 0x0d ]), # the 16-bit fixed case
+      wanted : 1, got : 3,
+      name : "want fix int, got uint16"
+    },
+    {
+      buf : new Buffer([ 0xce, 0x00, 0x00, 0x00, 0x0d ]), # the 32-bit fixed case
+      wanted : 1, got : 5,
+      name : "want fix int, got uint32"
+    },
+    {
+      buf : new Buffer([ 0xce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d ]), # the 64-bit fixed case
+      wanted : 1, got : 9,
+      name : "want fix int, got uint64"
+    },
+
+    # binary
+    {
+      buf : new Buffer([0xc5, 0x00, 0x04, 0xff, 0xfe, 0x50, 0x55 ]),
+      wanted : 6, got : 7,
+      name : "want bin8, got bin16"
+    },
+    {
+      buf : new Buffer([0xc6, 0x00, 0x00, 0x00, 0x04, 0xff, 0xfe, 0x50, 0x55 ]),
+      wanted : 6, got : 9,
+      name : "want bin8, got bin32"
+    },
+
+
+  ]
+
+  for {buf,wanted,got,name},i in understuffs
+    err = null
+    try
+      res = purepack.unpack buf, { strict : true }
+    catch e
+      err = e
+    T.assert err?, "understuffed failure in strict mode (#{name} / #{i})"
+    T.equal err.message, "encoding size mismatch: wanted #{wanted} but got #{got}"
+    T.waypoint name
   cb()
 
-exports.strict_check_understuffed_array = (T,cb) ->
-  n = Buffer.concat [
-    new Buffer([0xdc, 0x00, 0x01 ]) # A 16-bit-sized buffer, with just 1 item
-    purepack.pack(2)
-  ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed array failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 2 but got 4"
-
-  n = Buffer.concat [
-    new Buffer([0xdd, 0x00, 0x00, 0x00, 0x01 ]) # A 16-bit-sized buffer, with just 1 item
-    purepack.pack(2)
-  ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed array failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 2 but got 6"
-
-  cb()
-
-exports.strict_check_understuffed_string = (T,cb) ->
-
-  # Test "abcd" encoded with understuffing a few different ways..
-
-  # the 8-bit fixed case
-  n = new Buffer([0xd9, 0x04, 0x61, 0x62, 0x63, 0x64 ])
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed string failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 5 but got 6"
-
-  # the 16-bit fixed case
-  n = new Buffer([0xda, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ])
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed string failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 5 but got 7"
-
-  # the 32-bit fixed case
-  n = new Buffer([0xdb, 0x0, 0x0, 0x0, 0x04, 0x61, 0x62, 0x63, 0x64 ])
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed string failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 5 but got 9"
-
-  cb()
-
-exports.strict_check_understuffed_int = (T,cb) ->
-
-  # Test 14 encoded with understuffing a few different ways..
-
-  # the 8-bit fixed case
-  n = new Buffer [0xcc, 0x0d ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed int failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 1 but got 2"
-
-  # the 16-bit fixed case
-  n = new Buffer [ 0xcd, 0x00, 0x0d ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed int failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 1 but got 3"
-
-  # the 32-bit fixed case
-  n = new Buffer [ 0xce, 0x00, 0x00, 0x00, 0x0d ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed int failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 1 but got 5"
-
-  # the 64-bit fixed case
-  n = new Buffer [ 0xce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0d ]
-  res = err = null
-  try
-    res = purepack.unpack n, { strict : true }
-  catch e
-    err = e
-  T.assert err?, "understuffed int failure in strict mode"
-  T.equal err.message, "encoding size mismatch: wanted 1 but got 9"
-  cb()
